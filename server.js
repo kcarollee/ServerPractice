@@ -2,7 +2,10 @@
 var express = require('express');
 var app = express();
 // listen on port 3000
-var server = app.listen(3000);
+var port = process.env.PORT || 3000;
+var server = app.listen(port, () =>{
+  console.log('STARTING SERVER AT ${port}');
+});
 var fs = require('fs');
 console.log("SERVER RUNNING");
 
@@ -32,7 +35,7 @@ function newConnection(socket){
 
       socket.broadcast.emit('mouse', data);
       //io.sockets.emit('mouse', data); // pass the data back to ALL clients including the one that sent the message
-      console.log(data);
+      //console.log(data);
   });
 
 
