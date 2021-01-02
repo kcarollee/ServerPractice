@@ -3,7 +3,7 @@ var socket;
 function setup() {
   createCanvas(600, 600);
 
-  socket = io.connect('https://kleesp1.herokuapp.com/socket.io/?EIO=4&transport=websocket'); //  or http://127.0.0.1:3000
+  socket = io(); //  or http://127.0.0.1:3000
   socket.on('mouse', (data) => {
     noFill();
     var size = noise(frameCount * 0.1) * 50;
