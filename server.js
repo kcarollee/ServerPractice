@@ -39,7 +39,11 @@ function newConnection(socket){
       //console.log(data);
   });
 
-
+  socket.on('update', (data2) => {
+    //console.log(posData);
+    //socket.broadcast.emit('update', posData);
+    io.sockets.emit('update', data2);
+  });
 }
 
 // receiving stuff from the client
