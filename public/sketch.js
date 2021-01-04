@@ -16,7 +16,12 @@ class ClientNode{
     push();
     translate(this.xpos, this.ypos, this.zpos)
     sphere(10);
-    if (typeof this.id !== "undefined") text(this.id.toString(), 0, 0);
+
+    if (typeof this.id !== "undefined") {
+      rotateX(-frameCount * 0.01);
+      fill(200, 50, 180);
+      text("YOUR ID: " + this.id.toString(), -130, -20);
+    }
     pop();
   }
 }
@@ -109,7 +114,10 @@ function draw() {
       push();
       translate(c.x, c.y, c.z);
       sphere(10);
-      if (typeof c.id !== "undefined") text(c.id.toString(), 0, 0);
+      if (typeof c.id !== "undefined") {
+        rotateX(-frameCount * 0.01);
+        text("ID: " + c.id.toString(), -120, -20);
+      }
       pop();
     });
     //console.log(cnodeArr);

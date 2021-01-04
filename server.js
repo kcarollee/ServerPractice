@@ -21,7 +21,7 @@ var io = socket(server);
 // whenever there's a new connection
 io.sockets.on('connection', newConnection);
 
-
+const MAX_CLIENT_NUM = 5;
 var clientNodes = [];
 function newConnection(socket){
   console.log(socket.id); // every single new connection has a new id
@@ -53,16 +53,27 @@ function newConnection(socket){
     x: parseInt(Math.random() * r - r * 0.5),
     y: parseInt(Math.random() * r - r * 0.5),
     z: parseInt(Math.random() * r - r * 0.5),
-    id: socket.id
+    id: socket.id,
+    index: clientNodes.length
   }
+
   clientNodes.push(newNodeData);
   console.log(clientNodes);
   var nodeArr = {
     arr: clientNodes
   }
-  clientNodes.push(newNodeData);
+  if (clientNodes.length < MAX_CLIENT_NUM) clientNodes.push(newNodeData);
+  else {
+    console.log(clientNodes.length);
+    clientNodes.shift();
+    clientNodes.push(newNodeData);
+  }
   socket.emit('newClientNode', newNodeData);
   io.sockets.emit('clientNodes', nodeArr);
+
+  socket.on('disconnect', () => {
+
+  });
 }
 
 // receiving stuff from the client
