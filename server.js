@@ -21,8 +21,11 @@ var io = socket(server);
 // whenever there's a new connection
 io.sockets.on('connection', newConnection);
 
+
+var clientNodes = [];
 function newConnection(socket){
   console.log(socket.id); // every single new connection has a new id
+  /*
   fs.appendFile('data.txt', socket.client.id.toString() + '\n', (err, data) => {
     if (err) return console.log("ERROR");
   });
@@ -44,6 +47,22 @@ function newConnection(socket){
     //socket.broadcast.emit('update', posData);
     io.sockets.emit('update', data2);
   });
+  */
+  var r = 300;
+  var newNodeData = {
+    x: parseInt(Math.random() * r - r * 0.5),
+    y: parseInt(Math.random() * r - r * 0.5),
+    z: parseInt(Math.random() * r - r * 0.5),
+    id: socket.id
+  }
+  clientNodes.push(newNodeData);
+  console.log(clientNodes);
+  var nodeArr = {
+    arr: clientNodes
+  }
+  clientNodes.push(newNodeData);
+  socket.emit('newClientNode', newNodeData);
+  io.sockets.emit('clientNodes', nodeArr);
 }
 
 // receiving stuff from the client
