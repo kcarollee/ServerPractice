@@ -4,11 +4,12 @@ var data2;
 var clientNodes;
 var font;
 class ClientNode{
-  constructor(xpos, ypos, zpos, id){
+  constructor(xpos, ypos, zpos, id, index){
     this.xpos = xpos;
     this.ypos = ypos;
     this.zpos = zpos;
     this.id = id;
+    this.index = index;
   }
 
   display(){
@@ -66,10 +67,15 @@ function setup() {
 
 
   socket.on('newClientNode', (data) => {
-    cnode = new ClientNode(data.x, data.y, data.z, data.id);
+    cnode = new ClientNode(data.x, data.y, data.z, data.id, data.index);
   });
   socket.on('clientNodes', (data) => {
     cnodeArr = data.arr;
+    console.log(cnodeArr);
+  });
+  socket.on('updateIndex', (data) => {
+    console.log(data + " AAAA");
+    if (typeof cnode !== "undefined") cnode.index = data;
   });
 }
 
@@ -94,6 +100,7 @@ function mouseDragged(){
 
 function draw() {
   background(200);
+  if (typeof cnode !== "undefined") console.log(cnode.index);
   /*
   fill(uColor);
   if (typeof socket.id !== "undefined") text("ID: " + socket.id, 10, 20);
