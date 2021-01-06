@@ -10,6 +10,26 @@ class ClientNode{
     this.zpos = zpos;
     this.id = id;
     this.index = index;
+    this.message = "HI MY ID IS " + this.id.toString();
+    this.messageCopy = '';
+    this.sendMessage = false;
+    this.messageCopyIndex = 0;
+    
+  }
+
+  modifyCopiedMessage(){
+   // console.log("MSG: " + this.message);
+    //console.log("COPY: " + this.messageCopy);
+    if (this.messageCopy.length <= this.message.length){
+      
+      this.messageCopy += this.message[this.messageCopyIndex];
+      this.messageCopyIndex++;
+    }
+    else {
+      //this.sendMessage = false;
+      this.messageCopyIndex = 0;
+      this.messageCopy = '';
+    }
   }
 
   display(){
@@ -36,6 +56,7 @@ function setup() {
   createCanvas(800, 800, WEBGL);
   textFont(font);
   textSize(10);
+  frameRate(30);
   socket = io(); //  or http://127.0.0.1:3000
   /*
   socket.on('mouse', (data) => {
@@ -77,6 +98,18 @@ function setup() {
     console.log(data + " AAAA");
     if (typeof cnode !== "undefined") cnode.index = data;
   });
+
+  socket.on('newMessage', (data) => {
+
+   // if (typeof data.msg !== "undefined") {
+      console.log("RECEIVED: " + data.msg);
+      //push();
+      text(data.msg, 0, 0);
+      //sphere(100);
+      //pop();
+    //}
+
+  });
 }
 
 
@@ -99,8 +132,22 @@ function mouseDragged(){
 }
 
 function draw() {
+
+  if (typeof cnode !== "undefined" ){
+    console.log(cnode.sendMessage);
+    if (cnode.sendMessage) {
+      cnode.modifyCopiedMessage();
+      //console.log(cnode.messageCopy);
+      var msgData = {
+            x: cnode.xpos,
+            y: cnode.ypos,
+            msg: cnode.messageCopy
+      };
+      socket.emit('newMessage', msgData);
+    }
+  }
   background(200);
-  if (typeof cnode !== "undefined") console.log(cnode.index);
+  
   /*
   fill(uColor);
   if (typeof socket.id !== "undefined") text("ID: " + socket.id, 10, 20);
@@ -120,7 +167,8 @@ function draw() {
     cnodeArr.forEach(c => {
       push();
       translate(c.x, c.y, c.z);
-      sphere(10);
+      fill(0);
+      sphere(24, 24, 10);
       if (typeof c.id !== "undefined") {
         rotateX(-frameCount * 0.01);
         text("ID: " + c.id.toString(), -120, -20);
@@ -128,5 +176,20 @@ function draw() {
       pop();
     });
     //console.log(cnodeArr);
+  }
+}
+
+function keyPressed(){
+  switch(key){
+    case 'n':
+      var msgData = {
+          x: cnode.xpos,
+          y: cnode.ypos,
+          msg: cnode.modifyCopiedMessage
+      };
+      cnode.sendMessage = true;
+      console.log(msgData);
+      
+      break;
   }
 }

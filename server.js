@@ -48,6 +48,10 @@ function newConnection(socket){
     io.sockets.emit('update', data2);
   });
   */
+   socket.on('newMessage', (data) => {
+    //console.log(data.msg);
+    io.sockets.emit('newMessage', data);
+  });
   var r = 300;
   var newNodeData = {
     x: parseInt(Math.random() * r - r * 0.5),
@@ -85,6 +89,8 @@ function newConnection(socket){
       });
       io.sockets.emit('clientNodes', nodeArr);
   });
+
+ 
 }
 
 // receiving stuff from the client
