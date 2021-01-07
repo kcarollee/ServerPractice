@@ -11,24 +11,37 @@ class ClientNode{
     this.id = id;
     this.index = index;
     this.message = "HI MY ID IS " + this.id.toString();
-    this.messageCopy = '';
-    this.sendMessage = false;
-    this.messageCopyIndex = 0;
     
+    this.sendMessage = false;
+    
+
+    this.receivedMessage = '';
+    this.messageCopy = '';
+    this.displayReceivedMessage = false;
+    this.messageCopyIndex = this.message.length - 1;
+    
+    this.receivedMessages = []; // obj ( msg & clientNode index)
+    this.receivedMessagesCopy = []; // msg only
+    this.receivedMessagesCopyIndices = []; // keeping track of indices
   }
 
   modifyCopiedMessage(){
-   // console.log("MSG: " + this.message);
-    //console.log("COPY: " + this.messageCopy);
-    if (this.messageCopy.length <= this.message.length){
-      
-      this.messageCopy += this.message[this.messageCopyIndex];
-      this.messageCopyIndex++;
-    }
-    else {
-      //this.sendMessage = false;
-      this.messageCopyIndex = 0;
-      this.messageCopy = '';
+   
+    for (let i = 0; i < this.receivedMessagesCopy.length; i++){
+      console.log("MOD");
+      console.log(this.receivedMessagesCopy[i] + " " + this.receivedMessages[i].msg.length);
+      if (this.receivedMessagesCopy[i].length < this.receivedMessages[i].msg.length){
+        this.receivedMessagesCopy[i] = 
+          this.receivedMessages[i].msg[this.receivedMessagesCopyIndices[i]] + this.receivedMessagesCopy[i];
+        this.receivedMessagesCopyIndices[i]--;
+        console.log(this.receivedMessagesCopy[i]);
+      }
+      else {
+
+        this.receivedMessagesCopy.splice(i, 1);
+        this.receivedMessagesCopyIndices.splice(i, 1);
+        this.receivedMessages.splice(i, 1);
+      }
     }
   }
 
@@ -100,13 +113,16 @@ function setup() {
   });
 
   socket.on('newMessage', (data) => {
-
+      cnode.displayReceivedMessage = true;
+      cnode.receivedMessages.push({
+        msg: data.msg,
+        index: data.index
+      });
+      cnode.receivedMessagesCopy.push('');
+      cnode.receivedMessagesCopyIndices.push(data.msg.length - 1);
+      console.log("RCVMSG: " + cnode.receivedMessages);
    // if (typeof data.msg !== "undefined") {
-      console.log("RECEIVED: " + data.msg);
-      //push();
-      text(data.msg, 0, 0);
-      //sphere(100);
-      //pop();
+     // console.log("RECEIVED: " + data.msg);
     //}
 
   });
@@ -132,7 +148,7 @@ function mouseDragged(){
 }
 
 function draw() {
-
+/*
   if (typeof cnode !== "undefined" ){
     console.log(cnode.sendMessage);
     if (cnode.sendMessage) {
@@ -146,6 +162,7 @@ function draw() {
       socket.emit('newMessage', msgData);
     }
   }
+  */
   background(200);
   
   /*
@@ -161,8 +178,23 @@ function draw() {
 
   socket.emit('update', data2);
   */
+
   rotateX(frameCount * 0.01);
-  if (typeof cnode !== "undefined") cnode.display();
+  if (typeof cnode !== "undefined") {
+    cnode.display();
+    if (cnode.displayReceivedMessage){
+
+      cnode.receivedMessagesCopy.forEach(s => {
+        push();
+        rotateX(-frameCount * 0.01);
+        //console.log(s.msg + " " + s.index);
+        text(s, 0,  0);
+        //sphere(100);
+        pop();
+      });
+      cnode.modifyCopiedMessage();
+    }
+  }
   if (typeof cnodeArr !== "undefined"){
     cnodeArr.forEach(c => {
       push();
@@ -177,6 +209,9 @@ function draw() {
     });
     //console.log(cnodeArr);
   }
+
+  
+  
 }
 
 function keyPressed(){
@@ -185,11 +220,13 @@ function keyPressed(){
       var msgData = {
           x: cnode.xpos,
           y: cnode.ypos,
-          msg: cnode.modifyCopiedMessage
+          msg: cnode.message,
+          index: cnode.index
       };
-      cnode.sendMessage = true;
-      console.log(msgData);
       
+      cnode.sendMessage = true;
+      socket.emit('newMessage', msgData);
+      console.log(msgData);
       break;
   }
 }
