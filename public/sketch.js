@@ -20,36 +20,61 @@ class ClientNode{
     this.displayReceivedMessage = false;
     this.messageCopyIndex = this.message.length - 1;
     
-    this.receivedMessages = []; // obj ( msg & clientNode index)
+    this.receivedMessageData = []; // obj ( msg & clientNode index)
     this.receivedMessagesCopy = []; // msg only
     this.receivedMessagesCopyIndices = []; // keeping track of indices
+    this.distancesFromReceivedNode = []; // keeping track of distances
+    this.charDeletionNums = [];
   }
 
   modifyCopiedMessage(){
    
     for (let i = 0; i < this.receivedMessagesCopy.length; i++){
-      console.log("MOD");
-      console.log(this.receivedMessagesCopy[i] + " " + this.receivedMessages[i].msg.length);
-      if (this.receivedMessagesCopy[i].length < this.receivedMessages[i].msg.length){
+      console.log(this.receivedMessagesCopy[i] + " " + this.receivedMessageData[i].msg.length);
+      if (this.receivedMessagesCopy[i].length < this.receivedMessageData[i].msg.length){
         this.receivedMessagesCopy[i] = 
-          this.receivedMessages[i].msg[this.receivedMessagesCopyIndices[i]] + this.receivedMessagesCopy[i];
+          this.receivedMessageData[i].msg[this.receivedMessagesCopyIndices[i]] + this.receivedMessagesCopy[i];
         this.receivedMessagesCopyIndices[i]--;
         console.log(this.receivedMessagesCopy[i]);
       }
-      else {
+      else { 
+        console.log("ELSE " + this.receivedMessagesCopy[i].length * fontSize + 
+          " " + this.distancesFromReceivedNode[i]);
+        // until *-----string*
+        if (this.receivedMessagesCopy[i].length * fontSize * 1.5 < this.distancesFromReceivedNode[i]){
+          this.receivedMessagesCopy[i] = ' ' + this.receivedMessagesCopy[i];
 
+        }
+        else {
+          if (this.charDeletionNums[i] < this.receivedMessageData[i].msg.length){
+            this.receivedMessagesCopy[i] = 
+              this.receivedMessagesCopy[i].slice(0, this.receivedMessagesCopy[i].length - 1);
+            this.receivedMessagesCopy[i] = ' ' + this.receivedMessagesCopy[i];
+            this.charDeletionNums[i]++;
+            console.log("SLICED: " + this.receivedMessagesCopy[i] + " " + this.charDeletionNums[i]);
+          }
+          else {
+            this.receivedMessagesCopy.splice(i, 1);
+            this.receivedMessagesCopyIndices.splice(i, 1);
+            this.receivedMessageData.splice(i, 1);
+            this.charDeletionNums[i] = 0;
+          }
+        }
+        /*
         this.receivedMessagesCopy.splice(i, 1);
         this.receivedMessagesCopyIndices.splice(i, 1);
-        this.receivedMessages.splice(i, 1);
+        this.receivedMessageData.splice(i, 1);
+        */
       }
     }
   }
 
   display(){
+    noStroke();
     fill(255);
     push();
     translate(this.xpos, this.ypos, this.zpos)
-    sphere(10);
+    sphere(12, 12, 10);
 
     if (typeof this.id !== "undefined") {
       rotateX(-frameCount * 0.01);
@@ -62,13 +87,14 @@ class ClientNode{
 
 var cnode;
 var cnodeArr;
+var fontSize = 10;
 function preload(){
   font = loadFont('assets/helvetica.ttf');
 }
 function setup() {
   createCanvas(800, 800, WEBGL);
   textFont(font);
-  textSize(10);
+  textSize(fontSize);
   frameRate(30);
   socket = io(); //  or http://127.0.0.1:3000
   /*
@@ -114,13 +140,19 @@ function setup() {
 
   socket.on('newMessage', (data) => {
       cnode.displayReceivedMessage = true;
-      cnode.receivedMessages.push({
+      cnode.receivedMessageData.push({
         msg: data.msg,
-        index: data.index
+        index: data.index // index corresponding to cnodeArr
       });
       cnode.receivedMessagesCopy.push('');
+      //console.log(data);
+      //console.log("DIST " + dist(cnode.xpos, cnode.ypos, cnode.ypos,
+      //  data.x, data.y, data.z));
+      cnode.distancesFromReceivedNode.push(dist(cnode.xpos, cnode.ypos, cnode.ypos,
+        data.x, data.y, data.z));
       cnode.receivedMessagesCopyIndices.push(data.msg.length - 1);
-      console.log("RCVMSG: " + cnode.receivedMessages);
+      cnode.charDeletionNums.push(0);
+      console.log("RCVMSG: " + cnode.receivedMessageData);
    // if (typeof data.msg !== "undefined") {
      // console.log("RECEIVED: " + data.msg);
     //}
@@ -163,7 +195,7 @@ function draw() {
     }
   }
   */
-  background(200);
+  background(0);
   
   /*
   fill(uColor);
@@ -183,7 +215,7 @@ function draw() {
   if (typeof cnode !== "undefined") {
     cnode.display();
     if (cnode.displayReceivedMessage){
-
+      /*
       cnode.receivedMessagesCopy.forEach(s => {
         push();
         rotateX(-frameCount * 0.01);
@@ -192,6 +224,29 @@ function draw() {
         //sphere(100);
         pop();
       });
+      */
+      // for each received message data
+      for (let i = 0; i < cnode.receivedMessageData.length; i++){
+        push();
+        //rotateX(-frameCount * 0.01);
+
+        translate(
+          cnodeArr[cnode.receivedMessageData[i].index].x,
+          cnodeArr[cnode.receivedMessageData[i].index].y,
+          cnodeArr[cnode.receivedMessageData[i].index].z
+        );
+
+        let vStart = createVector(cnodeArr[cnode.receivedMessageData[i].index].x,
+          cnodeArr[cnode.receivedMessageData[i].index].y,
+          cnodeArr[cnode.receivedMessageData[i].index].z);
+        let vDest = createVector(cnode.xpos, cnode.ypos, cnode.zpos);
+        let vDir = p5.Vector.sub(vDest, vStart).normalize();
+        let vInit = createVector(1, 0, 0);
+        let vBisect = p5.Vector.add(vDir, vInit).normalize();
+        rotate(PI, vBisect);
+        text(cnode.receivedMessagesCopy[i], 0, 0);
+        pop();
+      }
       cnode.modifyCopiedMessage();
     }
   }
@@ -199,10 +254,11 @@ function draw() {
     cnodeArr.forEach(c => {
       push();
       translate(c.x, c.y, c.z);
-      fill(0);
-      sphere(24, 24, 10);
+      noStroke();
+      fill(255);
+      sphere(12, 12, 10);
       if (typeof c.id !== "undefined") {
-        rotateX(-frameCount * 0.01);
+        //rotateX(-frameCount * 0.01);
         text("ID: " + c.id.toString(), -120, -20);
       }
       pop();
@@ -220,6 +276,7 @@ function keyPressed(){
       var msgData = {
           x: cnode.xpos,
           y: cnode.ypos,
+          z: cnode.zpos,
           msg: cnode.message,
           index: cnode.index
       };
