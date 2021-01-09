@@ -12,7 +12,7 @@ console.log("SERVER RUNNING");
 
 // allow static files under the public directory to be hosted
 app.use(express.static('public'));
-
+2
 var socket = require('socket.io');
 
 var io = socket(server);
@@ -62,7 +62,9 @@ function newConnection(socket){
   }
 
   var nodeArr = {
-    arr: clientNodes
+    arr: clientNodes,
+    updateIndex: false,
+    lastDeletedIndex: 0
   }
   if (clientNodes.length < MAX_CLIENT_NUM) {
     clientNodes.push(newNodeData);
@@ -87,10 +89,13 @@ function newConnection(socket){
   socket.on('disconnect', () => {
     console.log("DISCONNECTED");
       clientNodes.splice(newNodeData.index, 1);
+      nodeArr.lastDeletedIndex = newNodeData.index;
       clientNodes.forEach(n => {
         n.index = clientNodes.indexOf(n);
       });
+      nodeArr.updateIndex = true;
       io.sockets.emit('clientNodes', nodeArr);
+      nodeArr.updateIndex = false;
   });
 
  
