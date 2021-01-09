@@ -50,7 +50,7 @@ function newConnection(socket){
   */
    socket.on('newMessage', (data) => {
     //console.log(data.msg);
-    socket.broadcast.emit('newMessage', data);
+    io.sockets.emit('newMessage', data);
   });
   var r = 300;
   var newNodeData = {
