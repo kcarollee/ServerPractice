@@ -52,7 +52,7 @@ function newConnection(socket){
     //console.log(data.msg);
     io.sockets.emit('newMessage', data);
   });
-  var r = 300;
+  var r = 450;
   var newNodeData = {
     x: parseInt(Math.random() * r - r * 0.5),
     y: parseInt(Math.random() * r - r * 0.5),
