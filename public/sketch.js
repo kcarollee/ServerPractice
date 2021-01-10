@@ -220,7 +220,7 @@ function setup() {
 
     socket.on('messageArray', (data) => {
         messageArr = data.arr;
-        console.log(messageArr);
+        //console.log(messageArr);
     });
 }
 
