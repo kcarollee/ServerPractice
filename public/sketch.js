@@ -3,6 +3,8 @@ var uColor;
 var data2;
 var clientNodes;
 var font;
+
+
 class ClientNode {
     constructor(xpos, ypos, zpos, id, index) {
         this.xpos = xpos;
@@ -10,7 +12,7 @@ class ClientNode {
         this.zpos = zpos;
         this.id = id;
         this.index = index;
-        this.message = "HI MY ID IS " + this.id.toString();
+        this.message = '';
 
         this.sendMessage = false;
 
@@ -150,7 +152,7 @@ var clients;
 var cnodeArr;
 var fontSize = 15;
 var clientIndex;
-
+var messageArr;
 function preload() {
     font = loadFont('assets/helvetica.ttf');
 }
@@ -161,16 +163,10 @@ function setup() {
     textSize(fontSize);
     frameRate(30);
     socket = io(); //  or http://127.0.0.1:3000
-
-
-    console.log(socket);
-
-
-
-
     socket.on('clientNodes', (data) => {
         cnodeArr = data.arr;
         clients = [];
+        messageArr = data.messages;
         cnodeArr.forEach(c => {
             let cl = new ClientNode(c.x, c.y, c.z, c.id, c.index);
             clients.push(cl);
@@ -222,13 +218,16 @@ function setup() {
         }
     });
 
-
+    socket.on('messageArray', (data) => {
+        messageArr = data.arr;
+        console.log(messageArr);
+    });
 }
 
 function draw() {
     background(0);
+    push();
     rotateX(frameCount * 0.01);
-
     try {
         clients.forEach(cnode => {
             if (typeof cnode !== "undefined") {
@@ -272,6 +271,25 @@ function draw() {
     } catch (err) {
 
     }
+    pop();
+
+    // message field
+    push();
+    var w = 600;
+    var h = 200;
+    /*
+    noFill();
+    stroke(255);
+    rect(-w * 0.5, 0, w, h);
+    */
+    fill(255);
+    var gap = 20;
+    for (let i = 0; i < messageArr.length; i++){
+        text(messageArr[i].id + ":   " + messageArr[i].msg, -380, 200 + gap * i);
+    }
+    text("YOU (" + clients[clientIndex].id + "):   "  + 
+        clients[clientIndex].message, -380, 200 + gap * 6);
+    pop();
 }
 
 function keyPressed() {
@@ -283,11 +301,20 @@ function keyPressed() {
                 z: clients[clientIndex].zpos,
                 msg: clients[clientIndex].message,
                 index: clients[clientIndex].index,
+                id: clients[clientIndex].id,
                 sendTo: [0, 1] // indices of clients to which the message is sent
             };
-
             clients[clientIndex].sendMessage = true;
             socket.emit('newMessage', msgData);
+            clients[clientIndex].message = '';
             break;
+        case BACKSPACE:
+            clients[clientIndex].message = clients[clientIndex].message.slice(0, clients[clientIndex].message.length - 1);
+            break;
+        case SHIFT:
+            break;
+        default:
+            clients[clientIndex].message += key;
     }
+    console.log(clients[clientIndex].message);
 }

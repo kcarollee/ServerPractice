@@ -22,7 +22,9 @@ var io = socket(server);
 io.sockets.on('connection', newConnection);
 
 const MAX_CLIENT_NUM = 40;
+const MAX_MESSAGE_NUM = 5;
 var clientNodes = [];
+var messageArr = [];
 function newConnection(socket){
   console.log(socket.id); // every single new connection has a new id
   /*
@@ -51,6 +53,22 @@ function newConnection(socket){
    socket.on('newMessage', (data) => {
     //console.log(data.msg);
     io.sockets.emit('newMessage', data);
+    var msgData = {
+        msg: data.msg,
+        id: data.id
+      }
+    if (messageArr.length < MAX_MESSAGE_NUM) {
+      
+      messageArr.push(msgData);
+    }
+    else {
+      messageArr.shift();
+      messageArr.push(msgData);
+    }
+    var msgArr = {
+      arr: messageArr
+    };
+    io.sockets.emit('messageArray', msgArr);
   });
   var r = 450;
   var newNodeData = {
@@ -64,7 +82,8 @@ function newConnection(socket){
   var nodeArr = {
     arr: clientNodes,
     updateIndex: false,
-    lastDeletedIndex: 0
+    lastDeletedIndex: 0,
+    messages: messageArr
   }
   if (clientNodes.length < MAX_CLIENT_NUM) {
     clientNodes.push(newNodeData);
