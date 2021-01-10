@@ -284,11 +284,14 @@ function draw() {
     */
     fill(255);
     var gap = 20;
+    try{
     for (let i = 0; i < messageArr.length; i++){
         text(messageArr[i].id + ":   " + messageArr[i].msg, -380, 200 + gap * i);
     }
     text("YOU (" + clients[clientIndex].id + "):   "  + 
         clients[clientIndex].message, -380, 200 + gap * 6);
+    }
+    catch(err){}
     pop();
 }
 
