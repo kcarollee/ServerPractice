@@ -158,7 +158,7 @@ function preload() {
 }
 
 function setup() {
-    createCanvas(800, 800, WEBGL);
+    createCanvas(windowWidth, windowHeight, WEBGL);
     textFont(font);
     textSize(fontSize);
     frameRate(30);
@@ -285,6 +285,8 @@ function draw() {
     fill(255);
     var gap = 20;
     try{
+    if (clients.length == 1) text("1 USER ONLINE", -380, 200 - gap);
+    else text(clients.length + " USERS ONLINE", -380, 200 - gap);
     for (let i = 0; i < messageArr.length; i++){
         text(messageArr[i].id + ":   " + messageArr[i].msg, -380, 200 + gap * i);
     }
@@ -320,4 +322,8 @@ function keyPressed() {
             clients[clientIndex].message += key;
     }
     console.log(clients[clientIndex].message);
+}
+
+function windowResized(){
+    resizeCanvas(windowWidth, windowHeight);
 }
