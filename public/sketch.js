@@ -288,9 +288,9 @@ function draw() {
     if (clients.length == 1) text("1 USER ONLINE", -380, 200 - gap);
     else text(clients.length + " USERS ONLINE", -380, 200 - gap);
     for (let i = 0; i < messageArr.length; i++){
-        text(messageArr[i].id + ":   " + messageArr[i].msg, -380, 200 + gap * i);
+        text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 200 + gap * i);
     }
-    text("YOU (" + clients[clientIndex].id + "):   "  + 
+    text("YOU (" + clients[clientIndex].id + "):  "  + 
         clients[clientIndex].message, -380, 200 + gap * 6);
     }
     catch(err){}
@@ -321,7 +321,7 @@ function keyPressed() {
         default:
             clients[clientIndex].message += key;
     }
-    console.log(clients[clientIndex].message);
+    //console.log(clients[clientIndex].message);
 }
 
 function windowResized(){
