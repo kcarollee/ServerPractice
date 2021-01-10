@@ -154,7 +154,7 @@ var fontSize = 15;
 var clientIndex;
 var messageArr;
 function preload() {
-    font = loadFont('assets/helvetica.ttf');
+    font = loadFont('assets/dos.ttf');
 }
 
 function setup() {
