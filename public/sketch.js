@@ -5,147 +5,6 @@ var clientNodes;
 var font;
 
 
-class ClientNode {
-    constructor(xpos, ypos, zpos, id, index) {
-        this.xpos = xpos;
-        this.ypos = ypos;
-        this.zpos = zpos;
-        this.id = id;
-        this.index = index;
-        this.message = '';
-
-        this.sendMessage = false;
-
-
-        this.receivedMessage = '';
-        this.messageCopy = '';
-        this.displayReceivedMessage = false;
-        this.messageCopyIndex = this.message.length - 1;
-
-        this.receivedMessageData = []; // obj ( msg & clientNode index)
-        this.receivedMessagesCopy = []; // msg only
-        this.receivedMessagesCopyIndices = []; // keeping track of indices
-        this.distancesFromReceivedNode = []; // keeping track of distances
-        this.charDeletionNums = [];
-        this.charPushedNums = [];
-        this.interruptFlags = [];
-    }
-
-    modifyCopiedMessage() {
-        var indexTracker = 0;
-        var fontMult = 1.0;
-        try {
-            for (let i = 0; i < this.receivedMessagesCopy.length; i++) {
-                indexTracker = i;
-                // if the received message is longer than the distance
-                if (textWidth(this.receivedMessageData[i].msg) * fontMult > this.distancesFromReceivedNode[i]) {
-                    // *str-*
-                    if (textWidth(this.receivedMessagesCopy[i]) * fontMult < this.distancesFromReceivedNode[i] && !this.interruptFlags[i]) {
-                        this.receivedMessagesCopy[i] =
-                            this.receivedMessageData[i].msg[this.receivedMessagesCopyIndices[i]] + this.receivedMessagesCopy[i];
-                        this.receivedMessagesCopyIndices[i]--;
-                        this.charPushedNums[i]++;
-                    }
-                    // *stri*
-                    else {
-                        this.interruptFlags[i] = true;
-                        // if there are characters of the original message to copy left
-                        if (this.receivedMessagesCopyIndices[i] >= 0) {
-
-                            this.receivedMessagesCopy[i] =
-                                this.receivedMessagesCopy[i].slice(0, this.receivedMessagesCopy[i].length - 1);
-                            this.receivedMessagesCopy[i] =
-                                this.receivedMessageData[i].msg[this.receivedMessagesCopyIndices[i]] + this.receivedMessagesCopy[i];
-                            this.receivedMessagesCopyIndices[i]--;
-                        }
-                        // if the original text is finished displaying and blanks need to be filled
-                        else if (this.charPushedNums[i] >= 0) {
-                            this.receivedMessagesCopy[i] =
-                                this.receivedMessagesCopy[i].slice(0, this.receivedMessagesCopy[i].length - 1);
-                            this.receivedMessagesCopy[i] = "  " + this.receivedMessagesCopy[i];
-
-                            this.charPushedNums[i]--;
-                        }
-                        // else delete 
-                        else {
-                            this.receivedMessagesCopy.splice(i, 1);
-                            this.receivedMessagesCopyIndices.splice(i, 1);
-                            this.receivedMessageData.splice(i, 1);
-                            this.charDeletionNums.splice(i, 1);
-                            this.charPushedNums.splice(i, 1);
-                            this.distancesFromReceivedNode.splice(i, 1);
-                            this.interruptFlags.splice(i, 1);
-                        }
-                    }
-                }
-                // if the received message is shorter than the distance
-                else {
-                    // *string---*
-                    if (textWidth(this.receivedMessagesCopy[i]) * fontMult < this.distancesFromReceivedNode[i]) {
-                        // if the original message isn't finished copying
-                        if (this.receivedMessagesCopyIndices[i] >= 0) {
-                            this.receivedMessagesCopy[i] =
-                                this.receivedMessageData[i].msg[this.receivedMessagesCopyIndices[i]] + this.receivedMessagesCopy[i];
-                            this.receivedMessagesCopyIndices[i]--;
-                            this.charDeletionNums[i]++;
-                        }
-                        // is finished copying and needs blanks
-                        else {
-                            this.receivedMessagesCopy[i] = " " + this.receivedMessagesCopy[i];
-                        }
-                    }
-                    // *---string*
-                    else {
-                        // start slicing copied message from the right and push it with blanks
-                        if (this.charDeletionNums[i] >= 0) {
-                            this.receivedMessagesCopy[i] =
-                                this.receivedMessagesCopy[i].slice(0, this.receivedMessagesCopy[i].length - 1);
-                            this.receivedMessagesCopy[i] = " " + this.receivedMessagesCopy[i];
-                            this.charDeletionNums[i]--;
-                        }
-                        // else delete
-                        else {
-                            this.receivedMessagesCopy.splice(i, 1);
-                            this.receivedMessagesCopyIndices.splice(i, 1);
-                            this.receivedMessageData.splice(i, 1);
-                            this.charDeletionNums.splice(i, 1);
-                            this.charPushedNums.splice(i, 1);
-                            this.distancesFromReceivedNode.splice(i, 1);
-                            this.interruptFlags.splice(i, 1);
-                        }
-                    }
-                }
-            }
-        } catch (err) {
-            // gets triggered when users exit before all the message strings are processed
-            this.receivedMessagesCopy.splice(indexTracker, 1);
-            this.receivedMessagesCopyIndices.splice(indexTracker, 1);
-            this.receivedMessageData.splice(indexTracker, 1);
-            this.charDeletionNums.splice(indexTracker, 1);
-            this.charPushedNums.splice(indexTracker, 1);
-            this.distancesFromReceivedNode.splice(indexTracker, 1);
-            this.interruptFlags.splice(indexTracker, 1);
-        }
-    }
-
-    display() {
-        noStroke();
-        fill(255);
-        push();
-        translate(this.xpos, this.ypos, this.zpos)
-        sphere(12, 12, 10);
-
-        if (typeof this.id !== "undefined" &&
-            typeof clientIndex !== "undefined") {
-            if (clientIndex == this.index) {
-                rotateX(-frameCount * 0.01);
-                fill(200, 50, 180);
-                text("YOUR ID: " + this.id.toString(), -130, -20);
-            }
-        }
-        pop();
-    }
-}
 
 
 var clients;
@@ -161,7 +20,7 @@ function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
     textFont(font);
     textSize(fontSize);
-    frameRate(30);
+    frameRate(60);
     socket = io(); //  or http://127.0.0.1:3000
     socket.on('clientNodes', (data) => {
         cnodeArr = data.arr;
@@ -176,7 +35,7 @@ function setup() {
 
             if (data.lastDeletedIndex < clientIndex) clientIndex--;
             //else if (data.lastDeletedIndex == clientIndex) 
-            console.log("THIS CLIENT'S NEW INDEX: " + clientIndex);
+            //console.log("THIS CLIENT'S NEW INDEX: " + clientIndex);
 
             clients.forEach(c => {
                 for (let i = 0; i < c.receivedMessageData.length; i++) {
@@ -208,7 +67,7 @@ function setup() {
                     index: data.index // index corresponding to cnodeArr
                 });
                 clients[i].receivedMessagesCopy.push('');
-                clients[i].distancesFromReceivedNode.push(dist(clients[i].xpos, clients[i].ypos, clients[i].ypos,
+                clients[i].distancesFromReceivedNode.push(dist(clients[i].xpos, clients[i].ypos, clients[i].zpos,
                     data.x, data.y, data.z));
                 clients[i].receivedMessagesCopyIndices.push(data.msg.length - 1);
                 clients[i].charDeletionNums.push(0);
@@ -225,6 +84,7 @@ function setup() {
 }
 
 function draw() {
+    orbitControl();
     background(0);
     push();
     rotateX(frameCount * 0.01);
