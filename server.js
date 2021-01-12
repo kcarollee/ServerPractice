@@ -105,6 +105,10 @@ function newConnection(socket){
   
   io.sockets.emit('clientNodes', nodeArr);
 
+
+  socket.on ('updateMessages', (data) => {
+
+  });
   socket.on('disconnect', () => {
     console.log("DISCONNECTED");
       clientNodes.splice(newNodeData.index, 1);

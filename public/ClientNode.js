@@ -123,6 +123,7 @@ class ClientNode {
             }
         } catch (err) {
             // gets triggered when users exit before all the message strings are processed
+            console.log("ERR LOG");
             this.receivedMessagesCopy.splice(indexTracker, 1);
             this.receivedMessagesCopyIndices.splice(indexTracker, 1);
             this.receivedMessageData.splice(indexTracker, 1);

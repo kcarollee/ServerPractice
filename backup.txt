@@ -12,8 +12,6 @@ var cnodeArr;
 var fontSize = 15;
 var clientIndex;
 var messageArr;
-var firstFlag = true;
-
 function preload() {
     font = loadFont('assets/dos.ttf');
 }
@@ -26,55 +24,13 @@ function setup() {
     socket = io(); //  or http://127.0.0.1:3000
     socket.on('clientNodes', (data) => {
         cnodeArr = data.arr;
-        if (firstFlag) {
-            clients = [];
-            messageArr = data.messages;
-            cnodeArr.forEach(c => {
-                let cl = new ClientNode(c.x, c.y, c.z, c.id, c.index);
-                clients.push(cl);
-            });
-            firstFlag = false;
-        } else {
-            console.log("NOT FIRST" + clients);
-            // if a new user has joined
-            if (clients.length < cnodeArr.length) {
-                console.log("JOINED");
-                let cp = cnodeArr[cnodeArr.length - 1]
-                let cl = new ClientNode(cp.x, cp.y, cp.z, cp.id, cp.index);
-                clients.push(cl);
+        clients = [];
+        messageArr = data.messages;
+        cnodeArr.forEach(c => {
+            let cl = new ClientNode(c.x, c.y, c.z, c.id, c.index);
+            clients.push(cl);
+        });
 
-            }
-            // if a user has exited
-            else if (clients.length > cnodeArr.length) {
-                console.log("EXITED");
-                console.log('BEFORE SPLICE: ' + clients);
-                clients.splice(data.lastDeletedIndex, 1);
-                console.log('AFTER SPLICE: ' + clients);
-                if (data.lastDeletedIndex < clientIndex) clientIndex--;
-                clients.forEach(c => {
-                    for (let i = 0; i < c.receivedMessageData.length; i++) {
-
-                        if (data.lastDeletedIndex < c.receivedMessageData[i].index) c.receivedMessageData[i].index--;
-                        // might have to splice rest of the arrays
-                        else if (data.lastDeletedIndex == c.receivedMessagesData[i].index) c.receivedMessageData.splice(i, 1);
-
-                    }
-
-                });
-            }
-            /*
-            for (let i = 0; i < cnodeArr.length; i++){
-                clients[i].x = cnodeArr[i].x;
-                clients[i].y = cnodeArr[i].y;
-                clients[i].z = cnodeArr[i].z;
-                clients[i].id = cnodeArr[i].id;
-                clients[i].index = cnodeArr[i].index;
-            }
-            */
-            //console.log(clients[clientIndex].message);
-
-        }
-        /*
         if (data.updateIndex) {
 
             if (data.lastDeletedIndex < clientIndex) clientIndex--;
@@ -91,7 +47,6 @@ function setup() {
 
             data.updateIndex = false;
         }
-        */
     });
     // this user = clients[clientIndex];
     socket.on('newClientNode', (data) => {
@@ -188,15 +143,16 @@ function draw() {
     */
     fill(255);
     var gap = 20;
-    try {
-        if (clients.length == 1) text("1 USER ONLINE", -380, 200 - gap);
-        else text(clients.length + " USERS ONLINE", -380, 200 - gap);
-        for (let i = 0; i < messageArr.length; i++) {
-            text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 200 + gap * i);
-        }
-        text("YOU (" + clients[clientIndex].id + "):  " +
-            clients[clientIndex].message, -380, 200 + gap * 6);
-    } catch (err) {}
+    try{
+    if (clients.length == 1) text("1 USER ONLINE", -380, 200 - gap);
+    else text(clients.length + " USERS ONLINE", -380, 200 - gap);
+    for (let i = 0; i < messageArr.length; i++){
+        text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 200 + gap * i);
+    }
+    text("YOU (" + clients[clientIndex].id + "):  "  + 
+        clients[clientIndex].message, -380, 200 + gap * 6);
+    }
+    catch(err){}
     pop();
 }
 
@@ -228,6 +184,6 @@ function keyPressed() {
     //console.log(clients[clientIndex].message);
 }
 
-function windowResized() {
+function windowResized(){
     resizeCanvas(windowWidth, windowHeight);
 }
