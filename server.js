@@ -12,7 +12,7 @@ console.log("SERVER RUNNING");
 
 // allow static files under the public directory to be hosted
 app.use(express.static('public'));
-2
+
 var socket = require('socket.io');
 
 var io = socket(server);
@@ -27,29 +27,6 @@ var clientNodes = [];
 var messageArr = [];
 function newConnection(socket){
   console.log(socket.id); // every single new connection has a new id
-  /*
-  fs.appendFile('data.txt', socket.client.id.toString() + '\n', (err, data) => {
-    if (err) return console.log("ERROR");
-  });
-
-  // til this point, the messages are coming into the server, but not back out.
-
-  // mouse message specified by the client
-  socket.on('mouse', (data) => {
-      // when received the mouse message from a client,
-      // send the data back to ALL clients except the one the sent the message.
-
-      socket.broadcast.emit('mouse', data);
-      //io.sockets.emit('mouse', data); // pass the data back to ALL clients including the one that sent the message
-      //console.log(data);
-  });
-
-  socket.on('update', (data2) => {
-    //console.log(posData);
-    //socket.broadcast.emit('update', posData);
-    io.sockets.emit('update', data2);
-  });
-  */
    socket.on('newMessage', (data) => {
     //console.log(data.msg);
     io.sockets.emit('newMessage', data);

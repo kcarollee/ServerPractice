@@ -3,10 +3,6 @@ var uColor;
 var data2;
 var clientNodes;
 var font;
-
-
-
-
 var clients;
 var cnodeArr;
 var fontSize = 15;
@@ -35,10 +31,8 @@ function setup() {
             });
             firstFlag = false;
         } else {
-            console.log("NOT FIRST" + clients);
             // if a new user has joined
             if (clients.length < cnodeArr.length) {
-                console.log("JOINED");
                 let cp = cnodeArr[cnodeArr.length - 1]
                 let cl = new ClientNode(cp.x, cp.y, cp.z, cp.id, cp.index);
                 clients.push(cl);
@@ -46,56 +40,30 @@ function setup() {
             }
             // if a user has exited
             else if (clients.length > cnodeArr.length) {
-                console.log("EXITED");
-                console.log('BEFORE SPLICE: ' + clients);
+                var indexTracker;
                 clients.splice(data.lastDeletedIndex, 1);
-                console.log('AFTER SPLICE: ' + clients);
                 if (data.lastDeletedIndex < clientIndex) clientIndex--;
                 clients.forEach(c => {
-                    for (let i = 0; i < c.receivedMessageData.length; i++) {
+                    if (c.index > data.lastDeletedIndex) c.index--;
+                    try {
+                        for (let i = 0; i < c.receivedMessageData.length; i++) {
+                            indexTracker = i;
+                            if (data.lastDeletedIndex < c.receivedMessageData[i].index) {
+                                c.receivedMessageData[i].index--;
+                            } else if (data.lastDeletedIndex == c.receivedMessagesData[i].index) {
+                                c.spliceArrays(i);
+                            }
 
-                        if (data.lastDeletedIndex < c.receivedMessageData[i].index) c.receivedMessageData[i].index--;
-                        // might have to splice rest of the arrays
-                        else if (data.lastDeletedIndex == c.receivedMessagesData[i].index) c.receivedMessageData.splice(i, 1);
-
-                    }
-
+                        }
+                    } catch (err) {console.log("ERR TRIGGERED: " + clientIndex + " " + indexTracker);}
+                        
                 });
+                
             }
-            /*
-            for (let i = 0; i < cnodeArr.length; i++){
-                clients[i].x = cnodeArr[i].x;
-                clients[i].y = cnodeArr[i].y;
-                clients[i].z = cnodeArr[i].z;
-                clients[i].id = cnodeArr[i].id;
-                clients[i].index = cnodeArr[i].index;
-            }
-            */
-            //console.log(clients[clientIndex].message);
-
         }
-        /*
-        if (data.updateIndex) {
-
-            if (data.lastDeletedIndex < clientIndex) clientIndex--;
-            clients.forEach(c => {
-                for (let i = 0; i < c.receivedMessageData.length; i++) {
-
-                    if (data.lastDeletedIndex < c.receivedMessageData[i].index) c.receivedMessageData[i].index--;
-                    // might have to splice rest of the arrays
-                    else if (data.lastDeletedIndex == c.receivedMessagesData[i].index) c.receivedMessageData.splice(i, 1);
-
-                }
-
-            });
-
-            data.updateIndex = false;
-        }
-        */
     });
     // this user = clients[clientIndex];
     socket.on('newClientNode', (data) => {
-
         clientIndex = data.index;
 
     });
@@ -117,7 +85,6 @@ function setup() {
                 clients[i].interruptFlags.push(false);
             }
         }
-        console.log("NEW MESSAGE?");
     });
 
     socket.on('messageArray', (data) => {
@@ -129,10 +96,10 @@ function setup() {
 function draw() {
     //console.log(clients[clientIndex].message);
     orbitControl();
-    background(0);
-    push();
-    rotateX(frameCount * 0.01);
     try {
+        background(0);
+        push();
+        rotateX(frameCount * 0.01);
         clients.forEach(cnode => {
             if (typeof cnode !== "undefined") {
                 cnode.display();
@@ -214,7 +181,6 @@ function keyPressed() {
             };
             clients[clientIndex].sendMessage = true;
             socket.emit('newMessage', msgData);
-            console.log("TO BLANK");
             clients[clientIndex].message = '';
             break;
         case BACKSPACE:

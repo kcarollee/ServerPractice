@@ -62,13 +62,7 @@ class ClientNode {
                         }
                         // else delete 
                         else {
-                            this.receivedMessagesCopy.splice(i, 1);
-                            this.receivedMessagesCopyIndices.splice(i, 1);
-                            this.receivedMessageData.splice(i, 1);
-                            this.charDeletionNums.splice(i, 1);
-                            this.charPushedNums.splice(i, 1);
-                            this.distancesFromReceivedNode.splice(i, 1);
-                            this.interruptFlags.splice(i, 1);
+                            this.spliceArrays(i);
                         }
                     }
                 }
@@ -100,41 +94,28 @@ class ClientNode {
                         }
                         // else delete
                         else {
-                            this.receivedMessagesCopy.splice(i, 1);
-                            this.receivedMessagesCopyIndices.splice(i, 1);
-                            this.receivedMessageData.splice(i, 1);
-                            this.charDeletionNums.splice(i, 1);
-                            this.charPushedNums.splice(i, 1);
-                            this.distancesFromReceivedNode.splice(i, 1);
-                            this.interruptFlags.splice(i, 1);
+                            this.spliceArrays(i);
                         }
                     }
                 }
-                /* for debug
-                push();
-                noFill();
-                stroke(255);
-                rect(0, 0,  this.distancesFromReceivedNode[i], 10);
-                rect(0, 20, textWidth(this.receivedMessagesCopy[i]), 10);
-                fill(255);
-                text(this.receivedMessagesCopy[i], 0, 40);
-                pop();
-                */
             }
         } catch (err) {
             // gets triggered when users exit before all the message strings are processed
-            console.log("ERR LOG");
-            this.receivedMessagesCopy.splice(indexTracker, 1);
-            this.receivedMessagesCopyIndices.splice(indexTracker, 1);
-            this.receivedMessageData.splice(indexTracker, 1);
-            this.charDeletionNums.splice(indexTracker, 1);
-            this.charPushedNums.splice(indexTracker, 1);
-            this.distancesFromReceivedNode.splice(indexTracker, 1);
-            this.interruptFlags.splice(indexTracker, 1);
+            console.log("EXIT ERROR");
+            this.spliceArrays(indexTracker);
         }
 
     }
 
+    spliceArrays(idx){
+        this.receivedMessagesCopy.splice(idx, 1);
+        this.receivedMessagesCopyIndices.splice(idx, 1);
+        this.receivedMessageData.splice(idx, 1);
+        this.charDeletionNums.splice(idx, 1);
+        this.charPushedNums.splice(idx, 1);
+        this.distancesFromReceivedNode.splice(idx, 1);
+        this.interruptFlags.splice(idx, 1);
+    }
     display() {
         noStroke();
         fill(255);
