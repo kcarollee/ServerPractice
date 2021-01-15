@@ -122,15 +122,18 @@ class ClientNode {
         push();
         translate(this.xpos, this.ypos, this.zpos)
         sphere(12, 12, 10);
-
+        /*
         if (typeof this.id !== "undefined" &&
             typeof clientIndex !== "undefined") {
             if (clientIndex == this.index) {
                 rotateX(-frameCount * 0.01);
                 fill(200, 50, 180);
-                text("YOUR ID: " + this.id.toString(), -130, -20);
+                textAlign(CENTER);
+                text(this.id.toString(), 0, -fontSize * 1.25);
+                textAlign(LEFT);
             }
         }
+        */
         pop();
     }
 }

@@ -9,7 +9,8 @@ var fontSize = 15;
 var clientIndex;
 var messageArr;
 var firstFlag = true;
-
+var nameSet = false;
+var clientName = '';
 function preload() {
     font = loadFont('assets/dos.ttf');
 }
@@ -60,12 +61,18 @@ function setup() {
                 });
                 
             }
+
+
         }
     });
     // this user = clients[clientIndex];
     socket.on('newClientNode', (data) => {
         clientIndex = data.index;
 
+    });
+
+    socket.on('newName', (data) =>{
+        clients[data.index].id = data.name;
     });
 
     socket.on('newMessage', (data) => {
@@ -91,17 +98,42 @@ function setup() {
         messageArr = data.arr;
         //console.log(messageArr);
     });
+
+
 }
 
 function draw() {
     //console.log(clients[clientIndex].message);
     orbitControl();
+    background(0);
+    if (!nameSet){
+        fill(255);
+        textSize(50);
+        textAlign(CENTER);
+        fill(0, 255, 0);
+        text("ENTER YOUR NAME: " + clientName, 0, 0);
+        textAlign(LEFT);
+    }
     try {
-        background(0);
+        textSize(fontSize);
         push();
-        rotateX(frameCount * 0.01);
         clients.forEach(cnode => {
+            //text(cnode.id, 0, 10 * cnode.index);
             if (typeof cnode !== "undefined") {
+                push();
+                rotateX(frameCount * 0.01);
+                translate(cnode.xpos, cnode.ypos, cnode.zpos);
+                rotateX(-frameCount * 0.01);
+                if (cnode.index == clientIndex) fill(0, 255, 0);
+                else fill(255);
+                textAlign(CENTER);
+                text(cnode.id, 0, -fontSize * 1.25);
+                textAlign(LEFT);
+                pop();
+
+                push();
+                rotateX(frameCount * 0.01);
+                cnode.display();
                 cnode.display();
                 if (cnode.displayReceivedMessage) {
                     // for each received message data
@@ -129,6 +161,7 @@ function draw() {
                             if (cnode.index == clientIndex) fill(255, 0, 0);
                             else fill(255);
                             text(cnode.receivedMessagesCopy[i], 0, 0);
+
                             pop();
                             pop();
                         }
@@ -137,12 +170,14 @@ function draw() {
 
                     }
                 }
+                pop();
             }
         });
+        pop();
     } catch (err) {
 
     }
-    pop();
+   
 
     // message field
     push();
@@ -156,18 +191,19 @@ function draw() {
     fill(255);
     var gap = 20;
     try {
-        if (clients.length == 1) text("1 USER ONLINE", -380, 200 - gap);
-        else text(clients.length + " USERS ONLINE", -380, 200 - gap);
+        if (clients.length == 1) text("1 USER ONLINE", -380, 300 - gap);
+        else text(clients.length + " USERS ONLINE", -380, 300 - gap);
         for (let i = 0; i < messageArr.length; i++) {
-            text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 200 + gap * i);
+            text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 300 + gap * i);
         }
         text("YOU (" + clients[clientIndex].id + "):  " +
-            clients[clientIndex].message, -380, 200 + gap * 6);
+            clients[clientIndex].message, -380, 300 + gap * 6);
     } catch (err) {}
     pop();
 }
 
 function keyPressed() {
+    if (nameSet){
     switch (keyCode) {
         case ENTER:
             var msgData = {
@@ -190,6 +226,27 @@ function keyPressed() {
             break;
         default:
             clients[clientIndex].message += key;
+    }
+    }
+    else {
+        switch(keyCode){
+            case ENTER:
+                nameSet = true;
+                clients[clientIndex].id = clientName;
+                var nameData = {
+                    name: clientName,
+                    index: clientIndex
+                };
+                socket.emit('newName', nameData);
+                break;
+            case BACKSPACE:
+                clientName = clientName.slice(0, clientName.length - 1);
+                break;
+            case SHIFT:
+                break;
+            default:
+                clientName += key;
+        }
     }
     //console.log(clients[clientIndex].message);
 }

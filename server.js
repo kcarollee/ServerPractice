@@ -86,6 +86,11 @@ function newConnection(socket){
   socket.on ('updateMessages', (data) => {
 
   });
+
+  socket.on('newName', (data) => {
+    clientNodes[data.index].id = data.name;
+    io.sockets.emit('newName', data);
+  });
   socket.on('disconnect', () => {
     console.log("DISCONNECTED");
       clientNodes.splice(newNodeData.index, 1);
