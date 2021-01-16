@@ -6,6 +6,8 @@ precision highp float;
 uniform vec2 resolution;
 uniform float time;
 uniform sampler2D tex;
+uniform sampler2D tex2;
+uniform sampler2D tex2bb;
 
 
 float hash(float n) { return fract(sin(n) * 1e4); }
@@ -47,13 +49,17 @@ vec2 pc(vec2 uv, vec2 d){
 void main(){
   vec3 outCol = vec3(.0);
   vec2 uv = gl_FragCoord.xy / resolution;
-
+  
   uv.x += 0.0005 * cos(tan(time * 0.1  + uv.y * 10.0));
   uv.x += 0.0003 * tan(tan(time * 0.01  + uv.y * 10.0));
   uv.y += 0.0005 * sin(tan(time * 0.1  + uv.x * 10.0));
 
+  vec3 t1 = texture2D(tex, uv).rgb;
+  vec3 t2 = texture2D(tex2, uv).rgb;
+  vec3 t2bb = texture2D(tex2bb, uv).rgb;
   //uv.y = 1.0 - uv.y;
-  outCol = texture2D(tex, uv).rgb;
+  outCol = t1 + t2 + t2bb;
+
   //outCol *= noise(uv.xy * 1000.0) * 2.0;
   float dist = 1.0;
   

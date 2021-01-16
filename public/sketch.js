@@ -3,7 +3,7 @@ var uColor;
 var data2;
 var clientNodes;
 var font;
-var pgFont;
+var pgFont, pg2Font;
 var clients;
 var cnodeArr;
 var fontSize = 15;
@@ -14,18 +14,24 @@ var nameSet = false;
 var clientName = '';
 var disconnectedNodes;
 var pg;
-var shd;
+var shd, bbShd;
 var gl;
 var errFlag = false;
-
+var pg2, pg2bbm, pg2Mid;
 class Walker {
 
 }
 function preload() {
     font = loadFont('assets/dos.ttf');
     pg = createGraphics(windowWidth, windowHeight, WEBGL);
+    pg2 = createGraphics(windowWidth, windowHeight, WEBGL);
+    pg2bb = createGraphics(windowWidth, windowHeight, WEBGL);
+    pg2Mid = createGraphics(windowWidth, windowHeight, WEBGL);
+
     pgFont = pg.loadFont('assets/dos.ttf');
+    pg2Font = pg2.loadFont('assets/dos.ttf');
     shd = loadShader('assets/Shader.vert', 'assets/Shader.frag');
+    bbShd = loadShader('assets/bbShader.vert', 'assets/bbShader.frag');
 }
 
 function setup() {
@@ -34,6 +40,10 @@ function setup() {
     pg.textFont(pgFont);
     pg.textSize(fontSize);
     pg.frameRate(30);
+
+    pg2.textFont(pgFont);
+    pg2.textSize(fontSize);
+    pg2.frameRate(30);
 
     textFont(font);
     textSize(fontSize);
@@ -140,6 +150,8 @@ function draw() {
     pg.ambientLight(60, 60, 60);
     pg.pointLight(255, 255, 255, 0, 0, 200);
     pg.rotateX(PI);
+
+    //pg2.background(255);
     if (!nameSet){
         pg.push();
         pg.translate(0, -300, -100);
@@ -153,48 +165,8 @@ function draw() {
         pg.pop();
     }
     try {
-        pg.textSize(fontSize);
+        
         pg.push();
-        try{
-        disconnectedNodes.forEach(dn => {
-            pg.push();
-            pg.rotateX(frameCount * 0.01);
-            pg.rotateY(frameCount * 0.01);
-            pg.noFill();
-            pg.stroke(0, 0, 255);
-            pg.push();
-            pg.translate(dn.x, dn.y, dn.z);
-            pg.rotateX(frameCount * 0.01 + dn.index);
-            pg.rotateY(frameCount * 0.01 + dn.index);
-            pg.box(15);
-            pg.pop();
-
-            pg.push();
-            pg.fill(0, 255, 255);
-            pg.translate(dn.x, dn.y, dn.z);
-            pg.rotateY(-frameCount * 0.01);
-            pg.rotateX(-frameCount * 0.01);
-            pg.textAlign(CENTER);
-            pg.text("DISCONNECTED", 0, -fontSize * 1.2);
-            pg.textAlign(LEFT);
-            pg.pop();
-            pg.pop();
-        });
-        var r1 = int(random(0, disconnectedNodes.length));
-        var r2 = int(random(0, disconnectedNodes.length));
-        var d1 = disconnectedNodes[r1];
-        var d2 = disconnectedNodes[r2];
-
-        pg.push();
-        pg.rotateX(frameCount * 0.01);
-        pg.rotateY(frameCount * 0.01);
-        pg.strokeWeight(3);
-        pg.stroke(0, 0, 255);
-        pg.line(
-            d1.x, d1.y, d1.z, d2.x, d2.y, d2.z
-        );
-        pg.pop();
-        } catch(err){}
         clients.forEach(cnode => {
             //text(cnode.id, 0, 10 * cnode.index);
             if (typeof cnode !== "undefined") {
@@ -262,13 +234,74 @@ function draw() {
 
     }
     
+    /*
+    push();
+    translate(0, 0, 100);
+    image(pg2, -windowWidth * 0.5, -windowHeight * 0.5);
+    pop();
+*/
+    pg2.textSize(fontSize);
+    pg2.background(0);
+        pg2.push();
+        try{
+            pg2.push();
+            pg2.rotateX(frameCount * 0.01);
+            pg2.rotateY(frameCount * 0.01);
+        disconnectedNodes.forEach(dn => {
+            
+            
+
+            pg2.push();
+            pg2.translate(dn.x, dn.y, dn.z);
+            pg2.noFill();
+            pg2.stroke(0, 0, 255);
+            pg2.rotateX(frameCount * 0.01 + dn.index);
+            pg2.rotateY(frameCount * 0.01 + dn.index);
+            pg2.box(15);
+            pg2.pop();
+
+            pg2.push();
+            pg2.fill(0, 255, 255);
+            pg2.translate(dn.x, dn.y, dn.z);
+            pg2.rotateY(-frameCount * 0.01);
+            pg2.rotateX(-frameCount * 0.01);
+            pg2.textAlign(CENTER);
+            pg2.text("DISCONNECTED", 0, -fontSize * 1.2);
+            pg2.textAlign(LEFT);
+            pg2.pop();
+            //pg2.pop();
+        });
+        var r1 = int(random(0, disconnectedNodes.length));
+        var r2 = int(random(0, disconnectedNodes.length));
+        var d1 = disconnectedNodes[r1];
+        var d2 = disconnectedNodes[r2];
+
+        pg2.push();
+        //pg2.rotateX(frameCount * 0.01);
+        //pg2.rotateY(frameCount * 0.01);
+        pg2.strokeWeight(3);
+        pg2.stroke(0, 0, 255);
+        pg2.line(
+            d1.x, d1.y, d1.z, d2.x, d2.y, d2.z
+        );
+        pg2.pop();
+        pg2.pop();
+        } catch(err){}
+
+    pg2Mid.shader(bbShd);
+    bbShd.setUniform('tex', pg2);
+    bbShd.setUniform('bbTex', pg2bb);
+    bbShd.setUniform('resolution', [pg.width, pg.height]);
+    pg2Mid.rect(10, 10, 10, 10);
+
+    //image(pg2Mid, -width * 0.5, -height * 0.5);
 
 
-    //image(pg, -windowWidth * 0.5, -windowHeight * 0.5);
-    
     push();
     shader(shd);
     shd.setUniform('tex', pg);
+    shd.setUniform('tex2', pg2);
+    shd.setUniform('tex2bb', pg2Mid);
     shd.setUniform('resolution', [pg.width, pg.height]);
     shd.setUniform('time', frameCount);
     rectMode(CENTER);
@@ -278,6 +311,11 @@ function draw() {
     
     //pg.resetMatrix();
     pg._renderer._update();
+    pg2._renderer._update();
+
+    pg2bb.rotateX(PI);
+    pg2bb.image(pg2Mid, -pg.width * 0.5, -pg.height * 0.5);
+    
     // message field
      
 
@@ -306,7 +344,7 @@ function draw() {
         fill(255);
         text("YOU (" + clients[clientIndex].id + "):  " +
             clients[clientIndex].message, -380, 300 + gap * 6);
-    } catch (err) {console.log("WEIRD")}
+    } catch (err) {}
     
 }
 
