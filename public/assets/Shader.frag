@@ -48,13 +48,13 @@ void main(){
   vec3 outCol = vec3(.0);
   vec2 uv = gl_FragCoord.xy / resolution;
 
-  uv.x += 0.0005 * cos(tan(time * 0.1  + uv.y * 100.0));
-  uv.x += 0.0001 * tan(tan(time * 0.1  + uv.y * 100.0));
-  uv.y += 0.0005 * sin(tan(time * 0.1  + uv.x * 100.0));
+  uv.x += 0.0005 * cos(tan(time * 0.1  + uv.y * 10.0));
+  uv.x += 0.0003 * tan(tan(time * 0.01  + uv.y * 10.0));
+  uv.y += 0.0005 * sin(tan(time * 0.1  + uv.x * 10.0));
 
   //uv.y = 1.0 - uv.y;
   outCol = texture2D(tex, uv).rgb;
-
+  //outCol *= noise(uv.xy * 1000.0) * 2.0;
   float dist = 1.0;
   
   if (outCol.r < 0.001){
@@ -71,6 +71,6 @@ void main(){
   
   
   
-  
+  float avg = (outCol.r + outCol.g + outCol.b) / 3.0;
   gl_FragColor = vec4(outCol, 1.0);
 }

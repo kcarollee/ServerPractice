@@ -23,7 +23,7 @@ io.sockets.on('connection', newConnection);
 
 const MAX_CLIENT_NUM = 50;
 const MAX_MESSAGE_NUM = 5;
-const MAX_DISCONNECTED_NODES_NUM = 4;
+const MAX_DISCONNECTED_NODES_NUM = 7;
 var clientNodes = [];
 var disconnectedNodes = [];
 var messageArr = [];

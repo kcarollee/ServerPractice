@@ -17,6 +17,10 @@ var pg;
 var shd;
 var gl;
 var errFlag = false;
+
+class Walker {
+
+}
 function preload() {
     font = loadFont('assets/dos.ttf');
     pg = createGraphics(windowWidth, windowHeight, WEBGL);
@@ -132,13 +136,13 @@ function setup() {
 function draw() {
     //console.log(clients[clientIndex].message);
 
-    pg.background(0);
+    pg.background(25, 100);
     pg.ambientLight(60, 60, 60);
     pg.pointLight(255, 255, 255, 0, 0, 200);
     pg.rotateX(PI);
     if (!nameSet){
         pg.push();
-        pg.translate(0, 0, -100);
+        pg.translate(0, -300, -100);
         pg.fill(255);
         pg.textSize(50);
         pg.textAlign(CENTER);
@@ -176,6 +180,20 @@ function draw() {
             pg.pop();
             pg.pop();
         });
+        var r1 = int(random(0, disconnectedNodes.length));
+        var r2 = int(random(0, disconnectedNodes.length));
+        var d1 = disconnectedNodes[r1];
+        var d2 = disconnectedNodes[r2];
+
+        pg.push();
+        pg.rotateX(frameCount * 0.01);
+        pg.rotateY(frameCount * 0.01);
+        pg.strokeWeight(3);
+        pg.stroke(0, 0, 255);
+        pg.line(
+            d1.x, d1.y, d1.z, d2.x, d2.y, d2.z
+        );
+        pg.pop();
         } catch(err){}
         clients.forEach(cnode => {
             //text(cnode.id, 0, 10 * cnode.index);
@@ -276,12 +294,13 @@ function draw() {
     try {
         if (errFlag){
             fill(255, 0, 0);
-            text("AN ERROR MAY HAVE OCCURRED. REFRESH AND CONTINUE", -380, 300 - 2 * gap);
+            text("AN ERROR MAY HAVE OCCURRED.", -380, 300 - 2 * gap);
         }
         if (clients.length == 1) text("1 USER ONLINE", -380, 300 - gap);
         else text(clients.length + " USERS ONLINE", -380, 300 - gap);
         for (let i = 0; i < messageArr.length; i++) {
-            fill(clients[messageArr[i].index].color);
+            //fill(clients[messageArr[i].index].color);
+            fill(255);
             text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 300 + gap * i);
         }
         fill(255);
@@ -321,6 +340,7 @@ function keyPressed() {
     else {
         switch(keyCode){
             case ENTER:
+            if (!includesSpace(clientName)){
                 nameSet = true;
                 clients[clientIndex].id = clientName;
                 var nameData = {
@@ -328,6 +348,7 @@ function keyPressed() {
                     index: clientIndex
                 };
                 socket.emit('newName', nameData);
+            }
                 break;
             case BACKSPACE:
                 clientName = clientName.slice(0, clientName.length - 1);
@@ -335,7 +356,8 @@ function keyPressed() {
             case SHIFT:
                 break;
             default:
-                clientName += key;
+
+                if (clientName.length < 10) clientName += key;
         }
     }
     //console.log(clients[clientIndex].message);
@@ -344,4 +366,11 @@ function keyPressed() {
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     pg.resizeCanvas(windowWidth, windowHeight);
+}
+
+function includesSpace(str){
+    for (let i = 0; i < str.length; i++){
+        if (str[i] == ' ') return true;
+    }
+    return false;
 }
