@@ -116,12 +116,13 @@ class ClientNode {
         this.distancesFromReceivedNode.splice(idx, 1);
         this.interruptFlags.splice(idx, 1);
     }
-    display() {
-        noStroke();
-        fill(255);
-        push();
-        translate(this.xpos, this.ypos, this.zpos)
-        sphere(12, 12, 10);
+    display(pg) {
+        pg.noStroke();
+        pg.fill(255);
+        pg.push();
+        pg.translate(this.xpos, this.ypos, this.zpos);
+
+        pg.sphere(12, 12, 10);
         /*
         if (typeof this.id !== "undefined" &&
             typeof clientIndex !== "undefined") {
@@ -134,6 +135,6 @@ class ClientNode {
             }
         }
         */
-        pop();
+        pg.pop();
     }
 }

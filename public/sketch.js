@@ -3,6 +3,7 @@ var uColor;
 var data2;
 var clientNodes;
 var font;
+var pgFont;
 var clients;
 var cnodeArr;
 var fontSize = 15;
@@ -11,12 +12,23 @@ var messageArr;
 var firstFlag = true;
 var nameSet = false;
 var clientName = '';
+var pg;
+var shd;
+var gl;
 function preload() {
     font = loadFont('assets/dos.ttf');
+    pg = createGraphics(windowWidth, windowHeight, WEBGL);
+    pgFont = pg.loadFont('assets/dos.ttf');
+    shd = loadShader('assets/Shader.vert', 'assets/Shader.frag');
 }
 
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
+    
+    pg.textFont(pgFont);
+    pg.textSize(fontSize);
+    pg.frameRate(30);
+
     textFont(font);
     textSize(fontSize);
     frameRate(30);
@@ -99,51 +111,44 @@ function setup() {
         //console.log(messageArr);
     });
 
-
+    gl = this._renderer.GL;
+    gl.disable(gl.DEPTH_TEST);
 }
 
 function draw() {
     //console.log(clients[clientIndex].message);
-    orbitControl();
-    background(0);
-    if (!nameSet){
-        fill(255);
-        textSize(50);
-        textAlign(CENTER);
-        fill(0, 255, 0);
-        text("ENTER YOUR NAME: " + clientName, 0, 0);
-        textAlign(LEFT);
-    }
+
+    pg.background(0);
+    pg.rotateX(PI);
     try {
-        textSize(fontSize);
-        push();
+        pg.textSize(fontSize);
+        pg.push();
         clients.forEach(cnode => {
             //text(cnode.id, 0, 10 * cnode.index);
             if (typeof cnode !== "undefined") {
-                push();
-                rotateX(frameCount * 0.01);
-                translate(cnode.xpos, cnode.ypos, cnode.zpos);
-                rotateX(-frameCount * 0.01);
-                if (cnode.index == clientIndex) fill(0, 255, 0);
-                else fill(255);
-                textAlign(CENTER);
-                text(cnode.id, 0, -fontSize * 1.25);
-                textAlign(LEFT);
-                pop();
+                pg.push();
+                pg.rotateX(frameCount * 0.01);
+                pg.translate(cnode.xpos, cnode.ypos, cnode.zpos);
+                pg.rotateX(-frameCount * 0.01);
+                if (cnode.index == clientIndex) pg.fill(0, 255, 0);
+                else pg.fill(255);
+                pg.textAlign(CENTER);
+                pg.text(cnode.id, 0, -fontSize * 1.25);
+                pg.textAlign(LEFT);
+                pg.pop();
 
-                push();
-                rotateX(frameCount * 0.01);
-                cnode.display();
-                cnode.display();
+                pg.push();
+                pg.rotateX(frameCount * 0.01);
+                cnode.display(pg);
                 if (cnode.displayReceivedMessage) {
                     // for each received message data
                     try {
 
                         for (let i = 0; i < cnode.receivedMessageData.length; i++) {
 
-                            push();
+                            pg.push();
 
-                            translate(
+                            pg.translate(
                                 clients[cnode.receivedMessageData[i].index].xpos,
                                 clients[cnode.receivedMessageData[i].index].ypos,
                                 clients[cnode.receivedMessageData[i].index].zpos
@@ -155,31 +160,55 @@ function draw() {
                             let vDir = p5.Vector.sub(vDest, vStart).normalize();
                             let vInit = createVector(1, 0, 0);
                             let vBisect = p5.Vector.add(vDir, vInit).normalize();
-                            rotate(PI, vBisect);
-                            push();
-                            rotate(frameCount * 0.1, [1, 0, 0]);
-                            if (cnode.index == clientIndex) fill(255, 0, 0);
-                            else fill(255);
-                            text(cnode.receivedMessagesCopy[i], 0, 0);
+                            pg.rotate(PI, vBisect);
+                            pg.push();
+                            pg.rotate(frameCount * 0.1, [1, 0, 0]);
+                            if (cnode.index == clientIndex) pg.fill(255, 0, 0);
+                            else pg.fill(255);
+                            pg.text(cnode.receivedMessagesCopy[i], 0, 0);
 
-                            pop();
-                            pop();
+                            pg.pop();
+                            pg.pop();
                         }
                         cnode.modifyCopiedMessage();
                     } catch (err) {
 
                     }
                 }
-                pop();
+                pg.pop();
             }
         });
-        pop();
+        pg.pop();
     } catch (err) {
 
     }
-   
+    
 
+
+    //image(pg, -windowWidth * 0.5, -windowHeight * 0.5);
+    push();
+    shader(shd);
+    shd.setUniform('tex', pg);
+    shd.setUniform('resolution', [pg.width, pg.height]);
+    shd.setUniform('time', frameCount);
+    rectMode(CENTER);
+
+    rect(0, 0, 300 + 300 * sin(frameCount), 600);
+    pop();
+    pg._renderer._update();
     // message field
+     if (!nameSet){
+        push();
+        fill(255);
+        textSize(50);
+        textAlign(CENTER);
+        fill(0, 255, 0);
+        text("ENTER YOUR NAME: " + clientName, 0, 0);
+        textSize(fontSize);
+        textAlign(LEFT);
+        pop();
+    }
+
     push();
     var w = 600;
     var h = 200;
@@ -253,4 +282,5 @@ function keyPressed() {
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
+    pg.resizeCanvas(windowWidth, windowHeight);
 }
