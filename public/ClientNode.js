@@ -1,12 +1,12 @@
 class ClientNode {
-    constructor(xpos, ypos, zpos, id, index) {
+    constructor(xpos, ypos, zpos, id, index, clr) {
         this.xpos = xpos;
         this.ypos = ypos;
         this.zpos = zpos;
         this.id = id;
         this.index = index;
         this.message = '';
-
+        this.color = color(clr[0], clr[1], clr[2]);
         this.sendMessage = false;
 
 
@@ -118,7 +118,8 @@ class ClientNode {
     }
     display(pg) {
         pg.noStroke();
-        pg.fill(255);
+        
+        pg.fill(this.color);
         pg.push();
         pg.translate(this.xpos, this.ypos, this.zpos);
 

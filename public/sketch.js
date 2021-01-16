@@ -12,9 +12,11 @@ var messageArr;
 var firstFlag = true;
 var nameSet = false;
 var clientName = '';
+var disconnectedNodes;
 var pg;
 var shd;
 var gl;
+var errFlag = false;
 function preload() {
     font = loadFont('assets/dos.ttf');
     pg = createGraphics(windowWidth, windowHeight, WEBGL);
@@ -35,11 +37,12 @@ function setup() {
     socket = io(); //  or http://127.0.0.1:3000
     socket.on('clientNodes', (data) => {
         cnodeArr = data.arr;
+        disconnectedNodes = data.prevArr;
         if (firstFlag) {
             clients = [];
             messageArr = data.messages;
             cnodeArr.forEach(c => {
-                let cl = new ClientNode(c.x, c.y, c.z, c.id, c.index);
+                let cl = new ClientNode(c.x, c.y, c.z, c.id, c.index, c.color);
                 clients.push(cl);
             });
             firstFlag = false;
@@ -47,7 +50,7 @@ function setup() {
             // if a new user has joined
             if (clients.length < cnodeArr.length) {
                 let cp = cnodeArr[cnodeArr.length - 1]
-                let cl = new ClientNode(cp.x, cp.y, cp.z, cp.id, cp.index);
+                let cl = new ClientNode(cp.x, cp.y, cp.z, cp.id, cp.index, cp.color);
                 clients.push(cl);
 
             }
@@ -68,7 +71,10 @@ function setup() {
                             }
 
                         }
-                    } catch (err) {console.log("ERR TRIGGERED: " + clientIndex + " " + indexTracker);}
+                    } catch (err) {
+                        console.log("ERR TRIGGERED: " + clientIndex + " " + indexTracker);
+                        errFlag = true;
+                    }
                         
                 });
                 
@@ -93,7 +99,8 @@ function setup() {
                 clients[i].displayReceivedMessage = true;
                 clients[i].receivedMessageData.push({
                     msg: data.msg,
-                    index: data.index // index corresponding to cnodeArr
+                    index: data.index, // index corresponding to cnodeArr
+                    color: data.color
                 });
                 clients[i].receivedMessagesCopy.push('');
                 clients[i].distancesFromReceivedNode.push(dist(clients[i].xpos, clients[i].ypos, clients[i].zpos,
@@ -111,25 +118,77 @@ function setup() {
         //console.log(messageArr);
     });
 
+    socket.on('previousUsers', (data) =>{
+        disconnectedNodes = data.arr;
+    });
+
     gl = this._renderer.GL;
     gl.disable(gl.DEPTH_TEST);
+    pggl = pg._renderer.GL;
+    console.log(pggl);
+    //pggl.disable(pggl.DEPTH_TEST);
 }
 
 function draw() {
     //console.log(clients[clientIndex].message);
 
     pg.background(0);
+    pg.ambientLight(60, 60, 60);
+    pg.pointLight(255, 255, 255, 0, 0, 200);
     pg.rotateX(PI);
+    if (!nameSet){
+        pg.push();
+        pg.translate(0, 0, -100);
+        pg.fill(255);
+        pg.textSize(50);
+        pg.textAlign(CENTER);
+        pg.fill(0, 255, 0);
+        pg.text("ENTER YOUR NAME: " + clientName, 0, 0);
+        pg.textSize(fontSize);
+        pg.textAlign(LEFT);
+        pg.pop();
+    }
     try {
         pg.textSize(fontSize);
         pg.push();
+        try{
+        disconnectedNodes.forEach(dn => {
+            pg.push();
+            pg.rotateX(frameCount * 0.01);
+            pg.rotateY(frameCount * 0.01);
+            pg.noFill();
+            pg.stroke(0, 0, 255);
+            pg.push();
+            pg.translate(dn.x, dn.y, dn.z);
+            pg.rotateX(frameCount * 0.01 + dn.index);
+            pg.rotateY(frameCount * 0.01 + dn.index);
+            pg.box(15);
+            pg.pop();
+
+            pg.push();
+            pg.fill(0, 255, 255);
+            pg.translate(dn.x, dn.y, dn.z);
+            pg.rotateY(-frameCount * 0.01);
+            pg.rotateX(-frameCount * 0.01);
+            pg.textAlign(CENTER);
+            pg.text("DISCONNECTED", 0, -fontSize * 1.2);
+            pg.textAlign(LEFT);
+            pg.pop();
+            pg.pop();
+        });
+        } catch(err){}
         clients.forEach(cnode => {
             //text(cnode.id, 0, 10 * cnode.index);
             if (typeof cnode !== "undefined") {
+                var ms = 0.005; // mouse sensitivity
                 pg.push();
-                pg.rotateX(frameCount * 0.01);
+                pg.rotateX(frameCount * 0.01 + mouseY * ms);
+                pg.rotateY(frameCount * 0.01 + mouseX * ms);
+                pg.rotateZ(frameCount * 0.01);
                 pg.translate(cnode.xpos, cnode.ypos, cnode.zpos);
-                pg.rotateX(-frameCount * 0.01);
+                pg.rotateZ(-frameCount * 0.01);
+                pg.rotateY(-frameCount * 0.01 - mouseX * ms);
+                pg.rotateX(-frameCount * 0.01 - mouseY * ms);
                 if (cnode.index == clientIndex) pg.fill(0, 255, 0);
                 else pg.fill(255);
                 pg.textAlign(CENTER);
@@ -138,7 +197,9 @@ function draw() {
                 pg.pop();
 
                 pg.push();
-                pg.rotateX(frameCount * 0.01);
+                pg.rotateX(frameCount * 0.01 + mouseY * ms);
+                pg.rotateY(frameCount * 0.01 + mouseX * ms);
+                pg.rotateZ(frameCount * 0.01);
                 cnode.display(pg);
                 if (cnode.displayReceivedMessage) {
                     // for each received message data
@@ -164,7 +225,7 @@ function draw() {
                             pg.push();
                             pg.rotate(frameCount * 0.1, [1, 0, 0]);
                             if (cnode.index == clientIndex) pg.fill(255, 0, 0);
-                            else pg.fill(255);
+                            else pg.fill(clients[cnode.receivedMessageData[i].index].color);
                             pg.text(cnode.receivedMessagesCopy[i], 0, 0);
 
                             pg.pop();
@@ -186,6 +247,7 @@ function draw() {
 
 
     //image(pg, -windowWidth * 0.5, -windowHeight * 0.5);
+    
     push();
     shader(shd);
     shd.setUniform('tex', pg);
@@ -195,19 +257,11 @@ function draw() {
 
     rect(0, 0, 300 + 300 * sin(frameCount), 600);
     pop();
+    
+    //pg.resetMatrix();
     pg._renderer._update();
     // message field
-     if (!nameSet){
-        push();
-        fill(255);
-        textSize(50);
-        textAlign(CENTER);
-        fill(0, 255, 0);
-        text("ENTER YOUR NAME: " + clientName, 0, 0);
-        textSize(fontSize);
-        textAlign(LEFT);
-        pop();
-    }
+     
 
     push();
     var w = 600;
@@ -220,15 +274,21 @@ function draw() {
     fill(255);
     var gap = 20;
     try {
+        if (errFlag){
+            fill(255, 0, 0);
+            text("AN ERROR MAY HAVE OCCURRED. REFRESH AND CONTINUE", -380, 300 - 2 * gap);
+        }
         if (clients.length == 1) text("1 USER ONLINE", -380, 300 - gap);
         else text(clients.length + " USERS ONLINE", -380, 300 - gap);
         for (let i = 0; i < messageArr.length; i++) {
+            fill(clients[messageArr[i].index].color);
             text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 300 + gap * i);
         }
+        fill(255);
         text("YOU (" + clients[clientIndex].id + "):  " +
             clients[clientIndex].message, -380, 300 + gap * 6);
-    } catch (err) {}
-    pop();
+    } catch (err) {console.log("WEIRD")}
+    
 }
 
 function keyPressed() {
@@ -242,6 +302,7 @@ function keyPressed() {
                 msg: clients[clientIndex].message,
                 index: clients[clientIndex].index,
                 id: clients[clientIndex].id,
+                color: clients[clientIndex].color,
                 sendTo: [0, 1] // indices of clients to which the message is sent
             };
             clients[clientIndex].sendMessage = true;
