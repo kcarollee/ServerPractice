@@ -336,7 +336,7 @@ function draw() {
             fill(255, 0, 0);
             text("AN ERROR MAY HAVE OCCURRED.", txpos, typos - 3 * gap);
         }
-        text("type >r(x) to send a random string of length x. ex) >r100", txpos, typos - gap);
+        text("type >rx to send a random string of length x. ex) >r100", txpos, typos - gap);
         if (clients.length == 1) text("1 USER ONLINE", txpos, typos - 2 * gap);
         else text(clients.length + " USERS ONLINE", txpos, typos - 2 * gap);
         for (let i = 0; i < messageArr.length; i++) {
