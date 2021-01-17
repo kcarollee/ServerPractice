@@ -18,7 +18,8 @@ void main(){
   vec3 bb = texture2D(bbTex, uv).rgb;
   float bbAvg = (bb.r + bb.g + bb.b) / 3.0;
   vec3 bbGrey = vec3(bbAvg);
+  if (bbAvg < 0.05) bbGrey = vec3(.0);
   outCol = t + bbGrey * 0.9;
-  
+
   gl_FragColor = vec4(outCol, 1.0);
 }
