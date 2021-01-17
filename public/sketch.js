@@ -137,7 +137,7 @@ function setup() {
     gl = this._renderer.GL;
     gl.disable(gl.DEPTH_TEST);
     pggl = pg._renderer.GL;
-    console.log(pggl);
+    
     //pggl.disable(pggl.DEPTH_TEST);
 }
 
@@ -428,10 +428,6 @@ function keyPressed() {
                 break;
             default:
                 clients[clientIndex].message += key;
-        }
-        if (keyIsDown(99) && keyIsDown(CONTROL)) {
-            console.log("TEST");
-            clients[clientIndex].message = "test";
         }
     } else {
         switch (keyCode) {
