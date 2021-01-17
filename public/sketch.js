@@ -146,7 +146,7 @@ function setup() {
 function draw() {
     //console.log(clients[clientIndex].message);
 
-    pg.background(25, 100);
+    pg.background(0);
     pg.ambientLight(60, 60, 60);
     pg.pointLight(255, 255, 255, 0, 0, 200);
     pg.rotateX(PI);
@@ -266,7 +266,7 @@ function draw() {
             pg2.rotateY(-frameCount * 0.01);
             pg2.rotateX(-frameCount * 0.01);
             pg2.textAlign(CENTER);
-            pg2.text("DISCONNECTED", 0, -fontSize * 1.2);
+            pg2.text("OFF", 0, -fontSize * 1.2);
             pg2.textAlign(LEFT);
             pg2.pop();
             //pg2.pop();
@@ -315,7 +315,7 @@ function draw() {
 
     pg2bb.rotateX(PI);
     pg2bb.image(pg2Mid, -pg.width * 0.5, -pg.height * 0.5);
-    
+    pg2bb._renderer._update();
     // message field
      
 

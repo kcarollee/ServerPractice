@@ -58,7 +58,7 @@ void main(){
   vec3 t2 = texture2D(tex2, uv).rgb;
   vec3 t2bb = texture2D(tex2bb, uv).rgb;
   //uv.y = 1.0 - uv.y;
-  outCol = t1 + t2 + t2bb;
+  outCol = t1  + t2bb;
 
   //outCol *= noise(uv.xy * 1000.0) * 2.0;
   float dist = 1.0;
