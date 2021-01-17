@@ -1,12 +1,12 @@
 class ClientNode {
-    constructor(xpos, ypos, zpos, id, index) {
+    constructor(xpos, ypos, zpos, id, index, clr) {
         this.xpos = xpos;
         this.ypos = ypos;
         this.zpos = zpos;
         this.id = id;
         this.index = index;
         this.message = '';
-
+        this.color = color(clr[0], clr[1], clr[2]);
         this.sendMessage = false;
 
 
@@ -62,13 +62,7 @@ class ClientNode {
                         }
                         // else delete 
                         else {
-                            this.receivedMessagesCopy.splice(i, 1);
-                            this.receivedMessagesCopyIndices.splice(i, 1);
-                            this.receivedMessageData.splice(i, 1);
-                            this.charDeletionNums.splice(i, 1);
-                            this.charPushedNums.splice(i, 1);
-                            this.distancesFromReceivedNode.splice(i, 1);
-                            this.interruptFlags.splice(i, 1);
+                            this.spliceArrays(i);
                         }
                     }
                 }
@@ -100,56 +94,48 @@ class ClientNode {
                         }
                         // else delete
                         else {
-                            this.receivedMessagesCopy.splice(i, 1);
-                            this.receivedMessagesCopyIndices.splice(i, 1);
-                            this.receivedMessageData.splice(i, 1);
-                            this.charDeletionNums.splice(i, 1);
-                            this.charPushedNums.splice(i, 1);
-                            this.distancesFromReceivedNode.splice(i, 1);
-                            this.interruptFlags.splice(i, 1);
+                            this.spliceArrays(i);
                         }
                     }
                 }
-                /* for debug
-                push();
-                noFill();
-                stroke(255);
-                rect(0, 0,  this.distancesFromReceivedNode[i], 10);
-                rect(0, 20, textWidth(this.receivedMessagesCopy[i]), 10);
-                fill(255);
-                text(this.receivedMessagesCopy[i], 0, 40);
-                pop();
-                */
             }
         } catch (err) {
             // gets triggered when users exit before all the message strings are processed
-            console.log("ERR LOG");
-            this.receivedMessagesCopy.splice(indexTracker, 1);
-            this.receivedMessagesCopyIndices.splice(indexTracker, 1);
-            this.receivedMessageData.splice(indexTracker, 1);
-            this.charDeletionNums.splice(indexTracker, 1);
-            this.charPushedNums.splice(indexTracker, 1);
-            this.distancesFromReceivedNode.splice(indexTracker, 1);
-            this.interruptFlags.splice(indexTracker, 1);
+            console.log("EXIT ERROR");
+            this.spliceArrays(indexTracker);
         }
 
     }
 
-    display() {
-        noStroke();
-        fill(255);
-        push();
-        translate(this.xpos, this.ypos, this.zpos)
-        sphere(12, 12, 10);
+    spliceArrays(idx){
+        this.receivedMessagesCopy.splice(idx, 1);
+        this.receivedMessagesCopyIndices.splice(idx, 1);
+        this.receivedMessageData.splice(idx, 1);
+        this.charDeletionNums.splice(idx, 1);
+        this.charPushedNums.splice(idx, 1);
+        this.distancesFromReceivedNode.splice(idx, 1);
+        this.interruptFlags.splice(idx, 1);
+    }
+    display(pg) {
+        pg.noStroke();
+        
+        pg.fill(this.color);
+        pg.push();
+        pg.translate(this.xpos, this.ypos, this.zpos);
 
+        pg.sphere(12, 12, 10);
+        /*
         if (typeof this.id !== "undefined" &&
             typeof clientIndex !== "undefined") {
             if (clientIndex == this.index) {
                 rotateX(-frameCount * 0.01);
                 fill(200, 50, 180);
-                text("YOUR ID: " + this.id.toString(), -130, -20);
+                textAlign(CENTER);
+                text(this.id.toString(), 0, -fontSize * 1.25);
+                textAlign(LEFT);
             }
         }
-        pop();
+        */
+        pg.pop();
     }
 }
