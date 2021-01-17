@@ -18,9 +18,7 @@ var shd, bbShd;
 var gl;
 var errFlag = false;
 var pg2, pg2bbm, pg2Mid;
-class Walker {
 
-}
 function preload() {
     font = loadFont('assets/dos.ttf');
     pg = createGraphics(windowWidth, windowHeight, WEBGL);
@@ -36,7 +34,7 @@ function preload() {
 
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
-    
+
     pg.textFont(pgFont);
     pg.textSize(fontSize);
     pg.frameRate(30);
@@ -89,9 +87,9 @@ function setup() {
                         console.log("ERR TRIGGERED: " + clientIndex + " " + indexTracker);
                         errFlag = true;
                     }
-                        
+
                 });
-                
+
             }
 
 
@@ -103,7 +101,7 @@ function setup() {
 
     });
 
-    socket.on('newName', (data) =>{
+    socket.on('newName', (data) => {
         clients[data.index].id = data.name;
     });
 
@@ -132,7 +130,7 @@ function setup() {
         //console.log(messageArr);
     });
 
-    socket.on('previousUsers', (data) =>{
+    socket.on('previousUsers', (data) => {
         disconnectedNodes = data.arr;
     });
 
@@ -152,9 +150,9 @@ function draw() {
     pg.rotateX(PI);
 
     //pg2.background(255);
-    if (!nameSet){
+    if (!nameSet) {
         pg.push();
-        pg.translate(0, -300, -100);
+        pg.translate(0, -height * 0.3, -100);
         pg.fill(255);
         pg.textSize(50);
         pg.textAlign(CENTER);
@@ -165,7 +163,7 @@ function draw() {
         pg.pop();
     }
     try {
-        
+
         pg.push();
         clients.forEach(cnode => {
             //text(cnode.id, 0, 10 * cnode.index);
@@ -233,7 +231,7 @@ function draw() {
     } catch (err) {
 
     }
-    
+
     /*
     push();
     translate(0, 0, 100);
@@ -242,14 +240,14 @@ function draw() {
 */
     pg2.textSize(fontSize);
     pg2.background(0);
+    pg2.push();
+    try {
         pg2.push();
-        try{
-            pg2.push();
-            pg2.rotateX(frameCount * 0.01);
-            pg2.rotateY(frameCount * 0.01);
+        pg2.rotateX(frameCount * 0.01);
+        pg2.rotateY(frameCount * 0.01);
         disconnectedNodes.forEach(dn => {
-            
-            
+
+
 
             pg2.push();
             pg2.translate(dn.x, dn.y, dn.z);
@@ -286,7 +284,7 @@ function draw() {
         );
         pg2.pop();
         pg2.pop();
-        } catch(err){}
+    } catch (err) {}
 
     pg2Mid.shader(bbShd);
     bbShd.setUniform('tex', pg2);
@@ -308,7 +306,7 @@ function draw() {
 
     rect(0, 0, 300 + 300 * sin(frameCount), 600);
     pop();
-    
+
     //pg.resetMatrix();
     pg._renderer._update();
     pg2._renderer._update();
@@ -317,7 +315,7 @@ function draw() {
     pg2bb.image(pg2Mid, -pg.width * 0.5, -pg.height * 0.5);
     pg2bb._renderer._update();
     // message field
-     
+
 
     push();
     var w = 600;
@@ -329,64 +327,124 @@ function draw() {
     */
     fill(255);
     var gap = 20;
+    var txpos = -0.475 * width;
+    var typos = height * 0.3;
     try {
-        if (errFlag){
+
+        
+        if (errFlag) {
             fill(255, 0, 0);
-            text("AN ERROR MAY HAVE OCCURRED.", -380, 300 - 2 * gap);
+            text("AN ERROR MAY HAVE OCCURRED.", txpos, typos - 3 * gap);
         }
-        if (clients.length == 1) text("1 USER ONLINE", -380, 300 - gap);
-        else text(clients.length + " USERS ONLINE", -380, 300 - gap);
+        text("type >r(x) to send a random string of length x. ex) >r100", txpos, typos - gap);
+        if (clients.length == 1) text("1 USER ONLINE", txpos, typos - 2 * gap);
+        else text(clients.length + " USERS ONLINE", txpos, typos - 2 * gap);
         for (let i = 0; i < messageArr.length; i++) {
             //fill(clients[messageArr[i].index].color);
             fill(255);
-            text(messageArr[i].id + ":  " + messageArr[i].msg, -380, 300 + gap * i);
+            text(messageArr[i].id + ":  " + messageArr[i].msg, txpos, typos + gap * i);
         }
         fill(255);
         text("YOU (" + clients[clientIndex].id + "):  " +
-            clients[clientIndex].message, -380, 300 + gap * 6);
+            clients[clientIndex].message, txpos, typos + gap * 6);
     } catch (err) {}
-    
+
+}
+
+// https://sometimes-n.tistory.com/34
+function isNumeric(num, opt) {
+
+    num = String(num).replace(/^\s+|\s+$/g, "");
+
+    if (typeof opt == "undefined" || opt == "1") {
+
+        var regex = /^[+\-]?(([1-9][0-9]{0,2}(,[0-9]{3})*)|[0-9]+){1}(\.[0-9]+)?$/g;
+    } else if (opt == "2") {
+
+        var regex = /^(([1-9][0-9]{0,2}(,[0-9]{3})*)|[0-9]+){1}(\.[0-9]+)?$/g;
+    } else if (opt == "3") {
+
+        var regex = /^[0-9]+(\.[0-9]+)?$/g;
+    } else {
+        var regex = /^[0-9]$/g;
+    }
+    if (regex.test(num)) {
+        num = num.replace(/,/g, "");
+        return isNaN(num) ? false : true;
+    } else {
+        return false;
+    }
+}
+
+function isRandomSender(str) {
+    if (str[0] == '>' && str[1] == 'r') {
+        if (isNumeric(str.substring(2, str.length)) &&
+            !includesSpace(str.substring(2, str.length))) return true;
+        else return false;
+    } else return false;
+}
+
+
+
+function randomString(len) {
+    var rStr = '';
+    for (let i = 0; i < len; i++) {
+        rStr += String.fromCharCode(int(random(33, 127)));
+    }
+    return rStr;
 }
 
 function keyPressed() {
-    if (nameSet){
-    switch (keyCode) {
-        case ENTER:
-            var msgData = {
-                x: clients[clientIndex].xpos,
-                y: clients[clientIndex].ypos,
-                z: clients[clientIndex].zpos,
-                msg: clients[clientIndex].message,
-                index: clients[clientIndex].index,
-                id: clients[clientIndex].id,
-                color: clients[clientIndex].color,
-                sendTo: [0, 1] // indices of clients to which the message is sent
-            };
-            clients[clientIndex].sendMessage = true;
-            socket.emit('newMessage', msgData);
-            clients[clientIndex].message = '';
-            break;
-        case BACKSPACE:
-            clients[clientIndex].message = clients[clientIndex].message.slice(0, clients[clientIndex].message.length - 1);
-            break;
-        case SHIFT:
-            break;
-        default:
-            clients[clientIndex].message += key;
-    }
-    }
-    else {
-        switch(keyCode){
+    if (nameSet) {
+        switch (keyCode) {
             case ENTER:
-            if (!includesSpace(clientName)){
-                nameSet = true;
-                clients[clientIndex].id = clientName;
-                var nameData = {
-                    name: clientName,
-                    index: clientIndex
+                if (isRandomSender(clients[clientIndex].message)) {
+                    var rlen = parseInt(clients[clientIndex].message.substring(2,
+                        clients[clientIndex].message.length));
+                    clients[clientIndex].message =
+                        randomString(rlen);
+
+                }
+                var msgData = {
+                    x: clients[clientIndex].xpos,
+                    y: clients[clientIndex].ypos,
+                    z: clients[clientIndex].zpos,
+                    msg: clients[clientIndex].message,
+                    index: clients[clientIndex].index,
+                    id: clients[clientIndex].id,
+                    color: clients[clientIndex].color,
+                    sendTo: [0, 1] // indices of clients to which the message is sent
                 };
-                socket.emit('newName', nameData);
-            }
+                clients[clientIndex].sendMessage = true;
+                socket.emit('newMessage', msgData);
+                clients[clientIndex].message = '';
+                break;
+            case BACKSPACE:
+                clients[clientIndex].message = clients[clientIndex].message.slice(0, clients[clientIndex].message.length - 1);
+                break;
+            case SHIFT:
+                break;
+            case CONTROL:
+                break;
+            default:
+                clients[clientIndex].message += key;
+        }
+        if (keyIsDown(99) && keyIsDown(CONTROL)) {
+            console.log("TEST");
+            clients[clientIndex].message = "test";
+        }
+    } else {
+        switch (keyCode) {
+            case ENTER:
+                if (!includesSpace(clientName)) {
+                    nameSet = true;
+                    clients[clientIndex].id = clientName;
+                    var nameData = {
+                        name: clientName,
+                        index: clientIndex
+                    };
+                    socket.emit('newName', nameData);
+                }
                 break;
             case BACKSPACE:
                 clientName = clientName.slice(0, clientName.length - 1);
@@ -404,10 +462,13 @@ function keyPressed() {
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     pg.resizeCanvas(windowWidth, windowHeight);
+    pg2.resizeCanvas(windowWidth, windowHeight);
+    pg2bb.resizeCanvas(windowWidth, windowHeight);
+    pg2Mid.resizeCanvas(windowWidth, windowHeight);
 }
 
-function includesSpace(str){
-    for (let i = 0; i < str.length; i++){
+function includesSpace(str) {
+    for (let i = 0; i < str.length; i++) {
         if (str[i] == ' ') return true;
     }
     return false;
