@@ -18,7 +18,7 @@ var shd, bbShd;
 var gl;
 var errFlag = false;
 var pg2, pg2bbm, pg2Mid;
-
+var backgroundOn = true;
 function preload() {
     font = loadFont('assets/dos.ttf');
     pg = createGraphics(windowWidth, windowHeight, WEBGL);
@@ -144,7 +144,7 @@ function setup() {
 function draw() {
     //console.log(clients[clientIndex].message);
 
-    pg.background(0);
+    if (backgroundOn) pg.background(0);
     pg.ambientLight(60, 60, 60);
     pg.pointLight(255, 255, 255, 0, 0, 200);
     pg.rotateX(PI);
@@ -334,11 +334,12 @@ function draw() {
         
         if (errFlag) {
             fill(255, 0, 0);
-            text("AN ERROR MAY HAVE OCCURRED.", txpos, typos - 3 * gap);
+            text("AN ERROR MAY HAVE OCCURRED.", txpos, typos - 4 * gap);
         }
         text("type >rx to send a random string of length x. ex) >r100", txpos, typos - gap);
-        if (clients.length == 1) text("1 USER ONLINE", txpos, typos - 2 * gap);
-        else text(clients.length + " USERS ONLINE", txpos, typos - 2 * gap);
+        text("background clear (ctrl): " + (backgroundOn ? "on" : "off"), txpos, typos - 2 * gap)
+        if (clients.length == 1) text("1 USER ONLINE", txpos, typos - 3 * gap);
+        else text(clients.length + " USERS ONLINE", txpos, typos - 3 * gap);
         for (let i = 0; i < messageArr.length; i++) {
             //fill(clients[messageArr[i].index].color);
             fill(255);
@@ -425,6 +426,7 @@ function keyPressed() {
             case SHIFT:
                 break;
             case CONTROL:
+                backgroundOn = !backgroundOn;
                 break;
             default:
                 clients[clientIndex].message += key;
@@ -446,6 +448,9 @@ function keyPressed() {
                 clientName = clientName.slice(0, clientName.length - 1);
                 break;
             case SHIFT:
+                break;
+            case CONTROL:
+                backgroundOn = !backgroundOn;
                 break;
             default:
 
